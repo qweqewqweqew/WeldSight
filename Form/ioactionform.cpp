@@ -402,6 +402,18 @@ void ioActionForm::handleDITrigger(int diPort, bool state)
         }
         break;
 
+    case 5:  // DI5-7 - 产品模式切换，按 SysEnv::productModes() 列表顺序对应 Z19/U07/E16
+    case 6:
+    case 7:
+        if (fallingEdge) {
+            const QString mode = SysEnv::productModes().value(diPort - 5);
+            if (mode.isEmpty()) break;
+            qDebug() << QString("收到产品模式切换命令（低电平触发）: %1").arg(mode);
+            ui->textEdit->append(QString("DI%1触发：切换产品模式 -> %2").arg(diPort).arg(mode));
+            emit productModeChangeRequested(mode);
+        }
+        break;
+
     default:
         // 其他DI端口可以在这里添加处理逻辑
         break;

@@ -134,6 +134,9 @@ void InitWidget::initWindow()
     // 添加相机采集完成信号连接
     connect(m_ioForm, &ioActionForm::camera1Ready, m_triForm, &CapSenseTriForm::onCamera1Ready);
     connect(m_ioForm, &ioActionForm::camera2Ready, m_triForm, &CapSenseTriForm::onCamera2Ready);
+    // DI5-7 产品模式切换
+    connect(m_ioForm, &ioActionForm::productModeChangeRequested,
+            this, &InitWidget::onProductModeDIRequested);
     connect(m_triForm, &CapSenseTriForm::sigFramResult,
             m_ioForm, &ioActionForm::slotFrameInfo);
     connect(this, &InitWidget::fixtureCodeReceived,
@@ -413,6 +416,20 @@ void InitWidget::onProductModeSelected(QAction* action)
     const QString mode = action->data().toString();
     if (mode == SysEnv::instance().getProductMode()) {
         updateProductModeLabel(mode);
+        return;
+    }
+
+    SysEnv::instance().setProductMode(mode);
+    updateProductModeLabel(SysEnv::instance().getProductMode());
+    if (m_triForm) {
+        m_triForm->onClearData();
+    }
+}
+
+void InitWidget::onProductModeDIRequested(const QString &mode)
+{
+    // DI5-7 低电平触发的模式切换，行为与界面手动切换一致
+    if (mode.isEmpty() || mode == SysEnv::instance().getProductMode()) {
         return;
     }
 

@@ -62,6 +62,8 @@ signals:
     void camera1Ready();     // 相机1采集完成
     void camera2Ready();     // 相机2采集完成
     void cameraSyncReady();  // 两个相机都采集完成
+    // DI5-7 产品模式切换请求（低电平触发）
+    void productModeChangeRequested(const QString &mode);
 
 private slots:
 

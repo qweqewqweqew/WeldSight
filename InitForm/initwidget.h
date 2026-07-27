@@ -62,6 +62,7 @@ private slots:
     void onVendorInfo();
     void onHistoryData();  // 添加历史数据查询槽函数
     void onProductModeSelected(QAction* action);
+    void onProductModeDIRequested(const QString &mode);  // DI5-7触发的模式切换
 
     /* 语言切换 */
     void switchLanguage(const QString &lang);
