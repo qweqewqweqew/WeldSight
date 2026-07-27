@@ -1,0 +1,5 @@
+{
+  "weldingdetectorfile": "YOLOV11_stamp_448.onnx",
+  "confthred": 0.35,
+  "nmsthred": 0.2
+}

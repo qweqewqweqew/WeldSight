@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+	<class>CapSenseTriForm</class>
+	<widget class="QWidget" name="CapSenseTriForm">
+		<property name="geometry">
+			<rect>
+				<x>0</x>
+				<y>0</y>
+				<width>1525</width>
+				<height>797</height>
+			</rect>
+		</property>
+		<property name="windowTitle">
+			<string>Form</string>
+		</property>
+		<property name="styleSheet">
+			<string notr="true"/>
+		</property>
+		<widget class="QWidget" name="display_sidebar" native="true">
+			<property name="geometry">
+				<rect>
+					<x>570</x>
+					<y>130</y>
+					<width>188</width>
+					<height>264</height>
+				</rect>
+			</property>
+			<layout class="QGridLayout" name="gridLayout">
+				<property name="leftMargin">
+					<number>2</number>
+				</property>
+				<property name="topMargin">
+					<number>2</number>
+				</property>
+				<property name="rightMargin">
+					<number>2</number>
+				</property>
+				<property name="bottomMargin">
+					<number>2</number>
+				</property>
+				<property name="spacing">
+					<number>2</number>
+				</property>
+				<item row="0" column="0">
+					<layout class="QVBoxLayout" name="verticalLayout">
+						<item>
+							<widget class="QGroupBox" name="gBox_config">
+								<property name="title">
+									<string>Configuration Parameters</string>
+								</property>
+								<property name="alignment">
+									<set>Qt::AlignCenter</set>
+								</property>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="gBox_ok">
+								<property name="title">
+									<string>Yield Rate / Pass Rate</string>
+								</property>
+								<property name="alignment">
+									<set>Qt::AlignCenter</set>
+								</property>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="gBox_ng">
+								<property name="title">
+									<string>Defect Count / Reject Count</string>
+								</property>
+								<property name="alignment">
+									<set>Qt::AlignCenter</set>
+								</property>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="gBox_total">
+								<property name="title">
+									<string>Total Inspected / Total Tested</string>
+								</property>
+								<property name="alignment">
+									<set>Qt::AlignCenter</set>
+								</property>
+							</widget>
+						</item>
+						<item>
+							<spacer name="verticalSpacer">
+								<property name="orientation">
+									<enum>Qt::Vertical</enum>
+								</property>
+								<property name="sizeHint" stdset="0">
+									<size>
+										<width>20</width>
+										<height>40</height>
+									</size>
+								</property>
+							</spacer>
+						</item>
+						<!-- 新增：自启动控制 -->
+						<item>
+							<widget class="QCheckBox" name="cb_autoStart">
+								<property name="text">
+									<string>Auto Start</string>
+								</property>
+								<property name="checked">
+									<bool>false</bool>
+								</property>
+								<property name="toolTip">
+									<string>Automatically start detection when system is ready</string>
+								</property>
+							</widget>
+						</item>
+						<item>
+							<layout class="QHBoxLayout" name="horizontalLayout">
+								<item>
+									<widget class="QPushButton" name="Bt_start">
+										<property name="minimumSize">
+											<size>
+												<width>0</width>
+												<height>40</height>
+											</size>
+										</property>
+										<property name="text">
+											<string>start</string>
+										</property>
+									</widget>
+								</item>
+								<item>
+									<widget class="QPushButton" name="Bt_clear">
+										<property name="minimumSize">
+											<size>
+												<width>0</width>
+												<height>40</height>
+											</size>
+										</property>
+										<property name="text">
+											<string>clear statistics</string>
+										</property>
+									</widget>
+								</item>
+							</layout>
+						</item>
+					</layout>
+				</item>
+			</layout>
+		</widget>
+	</widget>
+	<resources/>
+	<connections/>
+</ui>

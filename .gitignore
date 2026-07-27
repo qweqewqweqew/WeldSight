@@ -1,0 +1,24 @@
+# 构建产物
+Build/
+release/
+debug/
+Bin/
+packages/
+
+# IDE 用户文件
+*.user
+*.user.*
+
+# 大二进制文件
+*.onnx
+*.dll
+*.lib
+*.obj
+*.tlog
+*.qm
+*.pdb
+*.ilk
+*.exe
+
+# 日志
+日志.txt

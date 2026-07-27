@@ -1,0 +1,42 @@
+﻿
+/*设置表头样式（无内容部分*/
+QHeaderView
+{
+    background:transparent;
+}
+/*设置表头部分样式（有内容部分)*/
+QHeaderView::section
+{
+    font-size:12px;                     /*字体大小*/
+    font-family:"Consolas";	/*字体样式*/
+    color:#FFFFFF;                      /*字体颜色*/
+    background-color:#ADADAD;           /*背景颜色*/
+    border:none;                        /*边框 none无边框*/
+    text-align:center;                  /*对齐方式*/
+    min-height:35px;
+    max-height:35px;
+    margin-left:0px;
+    padding-left:0px;
+}
+
+/*表格样式*/
+QTableWidget{
+alternate-background-color:rgb(192,192,192);	/*背景交错颜色*/
+background:rgb(255,255,255);
+color:#DCDCDC;
+border:1px solid #242424;
+gridline-color:#242424;
+selection-color:#242424;	/*选中行的字体颜色*/
+selection-background-color:#242424;	/*选中行的背景颜色*/
+}
+/*单元格样式*/
+QTableWidget::item
+{
+    border-bottom:1px solid #EEF1F7 ; 	/*item每个单元格只显示下边线*/
+}
+/*单元格被选中时的样式*/
+QTableWidget::item::selected
+{
+    color:rgb(51,103,204);
+    background:#FFFFFF;
+}

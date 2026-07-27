@@ -1,0 +1,305 @@
+﻿
+/*缺陷页面*/
+#Info_gBox_1,#Info_gBox_2,#Plan_gBox_1,#Plan_gBox_2,#Plan_gBox_3{
+background-color: rgb(246, 247, 250);
+border-radius:5px;
+}
+#tabWidget{
+background-color: rgb(246, 247, 250);
+border-radius:5px;
+QTabBar::tab { height: 30px; width: 100px; }
+}
+
+
+QPushButton{
+color:#383C3A;
+border-radius:5px;
+border-style:solid;
+border-width:1px 1px 1px 1px;
+border-color:#5B9BD5;
+}
+
+QPushButton:hover{
+color:#FA694D;
+background-color:#EDF4FA;
+}
+
+QPushButton:disabled{
+color:#CCCCCC;
+background-color:#F6F7FA;
+border-color:#BFD8EF;
+}
+
+QPushButton:checked,QPushButton:pressed{
+color:#FA694D;
+background-color:#BFD8EF;
+}
+
+QMessageBox QPushButton{
+width:50px;
+height:20px;
+}
+
+
+
+QWidget#widget_nav{
+border-style:solid;
+border-width:0px 0px 1px 0px;
+border-color:#E6E7E8;
+background-color: rgb(246, 247, 250);
+}
+
+#Bt_sum,#Bt_a,#Bt_b,#Bt_c,#Bt_d,#Bt_e,#Bt_f,#Bt_g,#Bt_h{
+border-radius:0px;
+color:#383C3A;
+background:none;
+border-style:none;
+}
+
+QWidget#widget_nav>QPushButton:hover{
+color:#FA694D;
+background-color:#F6F7FA;
+}
+
+QWidget#widget_nav>QPushButton:disabled{
+color:#E3E3E3;
+background-color:#F6F7FA;
+}
+
+QWidget#widget_nav>QPushButton:checked,QWidget#widget_nav>QPushButton:pressed{
+color:#FA694D;
+border-style:solid;
+border-width:0px 0px 0px 2px;
+border-color:#00BB9E;
+background-color:#F7EEF0;
+}
+
+/*表格样式*/
+#Data_gBox_1,#Data_gBox_2,#Data_gBox_3{
+background-color: rgb(246, 247, 250);
+border-radius:5px;
+}
+
+#BatchCreate_gBox_1,#BatchCreate_gBox_2,#BatchCreate_gBox_3{
+background-color: rgb(246, 247, 250);
+border-radius:5px;
+}
+
+QComboBox {
+color:#383C3A;
+background: rgb(246, 247, 250);
+font-family: 'Consolas';
+font-size: 12px;
+border: 1px solid #CCCCCC;
+border-radius:3px 3px 0px 0px;
+}
+
+QComboBox:!enabled
+{
+color:#787878;
+background: #F0F0F0;
+}
+
+QComboBox:hover {
+background: #EFF1FA;
+}
+
+QComboBox::drop-down {
+subcontrol-origin: padding;
+subcontrol-position: top right;   /* 下拉框的位置（右上） */
+width: 15px;   /* 下拉框的寬度 */
+border-top-right-radius: 3px;   /* 下拉框的右上邊界線的圓角半徑（應和整個QComboBox右上邊界線的圓角半徑一致） */
+border-bottom-right-radius: 3px;   /* 同上 */
+}
+QComboBox::drop-down:hover {
+background: #EFF1FA;
+}
+
+QComboBox::down-arrow {
+width: 15px;
+image: url(:/imgs/left-arrow.png);
+padding: 0px 0px 0px 0px;
+}
+
+QComboBox::down-arrow:on {
+width: 15px;
+padding: 0px 0px 0px 0px;
+image: url(:/imgs/down-arrow.png);
+}
+
+QComboBox QAbstractItemView::item {
+min-height: 30px; min-width: 30px;
+}
+
+
+/*表格样式*/
+QTableWidget{
+selection-color:#26256f;	/*选中行的字体颜色*/
+selection-background-color:#99CCCC;	/*选中行的背景颜色*/
+}
+/*垂直滚动条 区域*/
+QScrollBar:vertical{
+    background:palette(base);
+    border-top-right-radius:2px;
+    border-bottom-right-radius:2px;
+    width:16px;
+    margin:0px;
+}
+/*滑块区域样式*/
+QScrollBar::handle:vertical{
+    background-color:#8B8B8B;
+    border-radius:2px;
+    min-height:20px;
+    margin:2px 4px 2px 4px;
+}
+
+QScrollBar::handle:vertical:hover{
+    background-color:palette(highlight);
+}
+
+QScrollBar::add-line:vertical{
+    background:none;
+    height:0px;
+    subcontrol-position:right;
+    subcontrol-origin:margin;
+}
+
+QScrollBar::sub-line:vertical{
+    background:none;
+    height:0px;
+    subcontrol-position:left;
+    subcontrol-origin:margin;
+}
+
+QScrollBar:horizontal{
+    background:palette(base);
+    height:16px;
+    margin:0px;
+}
+
+QScrollBar::handle:horizontal{
+    background-color:#8B8B8B;
+    border-radius:2px;
+    min-width:20px;
+    margin:4px 2px 4px 2px;
+}
+
+QScrollBar::handle:horizontal:hover{
+    background-color:palette(highlight);
+}
+
+QScrollBar::add-line:horizontal{
+    background:none;
+    width:0px;
+    subcontrol-position:bottom;
+    subcontrol-origin:margin;
+}
+
+QScrollBar::sub-line:horizontal{
+    background:none;
+    width:0px;
+    subcontrol-position:top;
+    subcontrol-origin:margin;
+}
+
+
+
+/* soft info*/
+#SoftInfoDlg{
+background:#F5FFFC;
+}
+
+#SoftDlg_gBox{
+position: absolute;
+width: 650px;
+height: 250px;
+left: 400px;
+top: 348px;
+background: rgb(255, 255, 255);
+border-radius:16px;
+}
+
+#text_company_img{
+background-image: url(:/imgs/soft_company.png);
+}
+
+#text_tel_img{
+background-image: url(:/imgs/soft_tel.png);
+}
+
+#text_address_img{
+background-image: url(:/imgs/soft_address.png);
+}
+
+#text_url_img{
+background-image: url(:/imgs/soft_url.png);
+}
+
+#text_company_1,#text_tel_1,#text_address_1,#text_url_1{
+color: rgb(33, 37, 35);
+font-size: 16px;
+text-align: left;
+}
+
+#text_company_2,#text_tel_2,#text_address_2,#text_url_2{
+color: rgb(153, 153, 153);
+font-size: 12px;
+text-align: left;
+}
+
+#soft_Title{
+color: rgb(57, 155, 115);
+font-family: PingFang SC;
+font-size: 32px;
+}
+
+/* NetDlg*/
+#label_state{
+color: rgb(70, 194, 142);
+}
+
+
+#Bt_Confirm{
+qproperty-icon: url(":/imgs/Bt_Confirm.png");
+}
+
+#Bt_Add{
+qproperty-icon: url(":/imgs/Bt_Add.png");
+}
+
+#Bt_Search{
+qproperty-icon: url(":/imgs/Bt_Search.png");
+}
+
+#Bt_Delete{
+qproperty-icon: url(":/imgs/Bt_Delete.png");
+}
+
+#Bt_Change{
+qproperty-icon: url(":/imgs/Bt_Change.png");
+}
+
+#Bt_Query{
+qproperty-icon: url(":/imgs/Bt_Query.png");
+}
+
+#Bt_Save,#Bt_save2,#Bt_Save_2,#Bt_save,#Bt_change_1,#Bt_change_2,#Bt_save_1,#Bt_save_2,#Bt_save_3{
+qproperty-icon: url(":/imgs/Bt_Save.png");
+}
+
+
+#Bt_clear{
+qproperty-icon: url(":/imgs/Bt_clear.png");
+}
+
+#Bt_CreatBatch{
+qproperty-icon: url(":/imgs/Bt_CreatBatch.png");
+}
+
+#Bt_Print{
+qproperty-icon: url(":/imgs/Bt_Print.png");
+}
+
+#Bt_Quite{
+qproperty-icon: url(":/imgs/Bt_Quite.png");
+}

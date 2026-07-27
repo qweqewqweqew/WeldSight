@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/close.png</file>
+        <file>img/max.png</file>
+        <file>img/mini.png</file>
+        <file>img/minimize.png</file>
+        <file>qss/initForm.qss</file>
+        <file>i18n/MzWeldSight_cn.qm</file>
+        <file>i18n/MzWeldSight_en.qm</file>
+        <file>img/logo.png</file>
+        <file>qss/dlg.qss</file>
+        <file>qss/table.qss</file>
+    </qresource>
+</RCC>

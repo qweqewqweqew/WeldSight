@@ -1,0 +1,312 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts;xlf</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Translation Files">
+      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
+      <Extensions>ts;xlf</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Distribution Files">
+      <UniqueIdentifier>{B83CAF91-C7BF-462F-B76C-EA11631F866C}</UniqueIdentifier>
+      <Extensions>*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Distribution Files">
+      <UniqueIdentifier>{B83CAF91-C7BF-462F-B76C-EA11631F866C}</UniqueIdentifier>
+      <Extensions>*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Alg\Welding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Form\algconfigform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Form\algorithmparammanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="algorithmForm\algorithmtester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraApi\cameracontroller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\camerathread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\cameraworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CapSenseTri\capsenseform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CapSenseTri\capsenseinterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CapSenseTri\capsensetriform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Form\dataform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Alg\imageconvert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\imagenamer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread\imagesavemanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CapSenseTri\imagezoomview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InitForm\initwidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Form\ioactionform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Form\saveform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveLog\savelog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SqliteUtil\sqliteutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\sysenv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Alg\weldingalgorithmmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Alg\weldinginitializationworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Alg\Api_Welding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Form\algconfigform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Form\algorithmparammanager.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="algorithmForm\algorithmtester.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CameraApi\cameracontroller.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Thread\camerathread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Thread\cameraworker.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CapSenseTri\capsenseform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CapSenseTri\capsenseinterface.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CapSenseTri\capsensetriform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClInclude Include="Common\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\cvqt_text.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Form\dataform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClInclude Include="Alg\imageconvert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Thread\imagenamer.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Thread\imagesavemanager.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="CapSenseTri\imagezoomview.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="InitForm\initwidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Form\ioactionform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Form\saveform.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SaveLog\savelog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClInclude Include="SqliteUtil\sqliteutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Common\sysenv.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <ClInclude Include="Alg\weldingalgorithmmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <QtMoc Include="Alg\weldinginitializationworker.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="debug\moc_predefs.h.cbt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="release\moc_predefs.h.cbt">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <QtTranslation Include="MzWeldSight_zh_CN.ts">
+      <Filter>Translation Files</Filter>
+    </QtTranslation>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="Form\algconfigform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="algorithmForm\algorithmtester.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="CapSenseTri\capsenseform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="CapSenseTri\capsensetriform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Form\dataform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="InitForm\initwidget.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Form\ioactionform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Form\saveform.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="InitForm\InitRes.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <None Include="InitForm\i18n\MzWeldSight_cn.qm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\i18n\MzWeldSight_en.qm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="debug\MzWeldSight_zh_CN.qm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="release\MzWeldSight_zh_CN.qm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\img\close.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\qss\dlg.qss">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\qss\initForm.qss">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\img\logo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\img\max.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\img\mini.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="InitForm\img\minimize.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <QtRcc Include="debug\qmake_qmake_qm_files.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="release\qmake_qmake_qm_files.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <None Include="InitForm\qss\table.qss">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".\CapSenseTri\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include=".\MzWeldSight_resource.rc" />
+  </ItemGroup>
+</Project>

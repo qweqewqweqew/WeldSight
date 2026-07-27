@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.35931.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MzWeldSight", "MzWeldSight.vcxproj", "{0A1B10A6-060C-38A4-BB9F-582D151ACB9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A1B10A6-060C-38A4-BB9F-582D151ACB9B}.Debug|x64.ActiveCfg = Debug|x64
+		{0A1B10A6-060C-38A4-BB9F-582D151ACB9B}.Debug|x64.Build.0 = Debug|x64
+		{0A1B10A6-060C-38A4-BB9F-582D151ACB9B}.Release|x64.ActiveCfg = Release|x64
+		{0A1B10A6-060C-38A4-BB9F-582D151ACB9B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D9C9C18A-9C76-475C-886E-BA815EE87069}
+	EndGlobalSection
+EndGlobal
