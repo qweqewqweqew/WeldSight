@@ -3,7 +3,6 @@
 #include "Common/common.h"
 
 class OVYOLOV26;
-class OVYOLOV8Seg;
 
 namespace SolderJointAlgorithm {
 
@@ -12,7 +11,7 @@ void process(int cameraId,
              WeldingResult& result,
              const InThresholdParam& params,
              OVYOLOV26& detector,
-             OVYOLOV8Seg& segmenter,
+             OVYOLOV26& segmenter,
              float confidence,
              float segmentationConfidence);
 

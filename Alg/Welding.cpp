@@ -37,7 +37,7 @@ long long count = 1;
 struct WeldingDetector::DetectorModels
 {
     std::vector<OVYOLOV26> detector;
-    std::vector<OVYOLOV8Seg> segmenter;
+    std::vector<OVYOLOV26> segmenter;
 
     DetectorModels()
         : detector(WORKNUM)
@@ -245,11 +245,10 @@ bool WeldingDetector::Initialize(Params params)
         std::vector<BBox> bboxs;
         std::vector<Instance> Segbboxs;
         float confidence = 0.5;
-        float nms = 0.3;
         for (int j = 0; j < 5; j++)
         {
             m_models->detector[i].Infer(image, bboxs, confidence);
-            m_models->segmenter[i].Infer1(image, Segbboxs, confidence, nms);
+            m_models->segmenter[i].SegInfer(image, Segbboxs, confidence);
         }
     }
 

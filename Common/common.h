@@ -125,7 +125,7 @@ struct WeldingResult
     double HD_SumArea=0, HD_MaxArea=0;
     double LT_SumArea=0, LT_MaxArea=0;
     bool HD_Flag = false, LT_Flag = false, HX_Gap = false;
-    std::vector<cv::Rect> HDrect, LTrect;
+    std::vector<cv::Rect> HDrect, LTrect, HXrect;
     std::vector<std::vector<cv::Point>> HXGAP_max_contour;
     // 推理耗时(ms)
     qint64 inferTime = 0;

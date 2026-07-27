@@ -18,11 +18,13 @@
 #undef MZ_RESTORE_QT_EMIT
 #endif
 
+#include <QDebug>
 #include <QElapsedTimer>
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
 #include <opencv2/imgproc.hpp>
+#include <queue>
 #include <sstream>
 
 namespace {
@@ -73,6 +75,113 @@ cv::Mat resizePad(const cv::Mat& input, int targetWidth, int targetHeight,
     return output;
 }
 
+// 从引脚ROI图像中计算梯形短边中心相对于ROI中心的X偏移量
+float computeTrapezoidOffset(const cv::Mat& roiImg)
+{
+    if (roiImg.empty()) return 0.0f;
+
+    cv::Mat gray, binary;
+    cv::cvtColor(roiImg, gray, cv::COLOR_BGR2GRAY);
+    cv::medianBlur(gray, gray, 5);
+    cv::threshold(gray, binary, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+
+    // 顶部凹陷填充（触边即止）
+    int leftWhite = -1, rightWhite = -1;
+    for (int c = 0; c < binary.cols; ++c) {
+        if (binary.at<uchar>(0, c) == 255) {
+            leftWhite = c;
+            break;
+        }
+    }
+    for (int c = binary.cols - 1; c >= 0; --c) {
+        if (binary.at<uchar>(0, c) == 255) {
+            rightWhite = c;
+            break;
+        }
+    }
+    if (leftWhite != -1 && rightWhite != -1) {
+        const int centerCol = (leftWhite + rightWhite) / 2;
+        const cv::Point centerPoint(centerCol, 0);
+        if (binary.at<uchar>(centerPoint) == 0) {
+            std::queue<cv::Point> q;
+            q.push(centerPoint);
+            binary.at<uchar>(centerPoint) = 255;
+
+            bool stopped = false;
+            while (!q.empty() && !stopped) {
+                const cv::Point p = q.front();
+                q.pop();
+
+                if (p.x == 0 || p.x == binary.cols - 1) {
+                    stopped = true;
+                    continue;
+                }
+                if (p.x > 0 && binary.at<uchar>(p.y, p.x - 1) == 0) {
+                    const cv::Point left(p.x - 1, p.y);
+                    binary.at<uchar>(left) = 255;
+                    q.push(left);
+                    if (left.x == 0) stopped = true;
+                }
+                if (!stopped && p.x < binary.cols - 1 && binary.at<uchar>(p.y, p.x + 1) == 0) {
+                    const cv::Point right(p.x + 1, p.y);
+                    binary.at<uchar>(right) = 255;
+                    q.push(right);
+                    if (right.x == binary.cols - 1) stopped = true;
+                }
+                if (!stopped && p.y < binary.rows - 1 && binary.at<uchar>(p.y + 1, p.x) == 0) {
+                    const cv::Point down(p.x, p.y + 1);
+                    binary.at<uchar>(down) = 255;
+                    q.push(down);
+                }
+            }
+        }
+    }
+
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    if (contours.empty()) return 0.0f;
+
+    const auto largest = std::max_element(contours.begin(), contours.end(),
+        [](const auto& lhs, const auto& rhs) {
+            return cv::contourArea(lhs) < cv::contourArea(rhs);
+        });
+
+    std::vector<cv::Point> approx;
+    const double perimeter = cv::arcLength(*largest, true);
+    bool found = false;
+    for (double eps = 0.02; eps <= 0.15; eps += 0.01) {
+        cv::approxPolyDP(*largest, approx, eps * perimeter, true);
+        if (approx.size() == 4) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        const cv::RotatedRect rect = cv::minAreaRect(*largest);
+        cv::Point2f vertices[4];
+        rect.points(vertices);
+        approx.clear();
+        for (int i = 0; i < 4; ++i)
+            approx.emplace_back(static_cast<int>(vertices[i].x),
+                                static_cast<int>(vertices[i].y));
+    }
+
+    // 寻找最底边（平均 y 最大）
+    int bottomIdx = 0;
+    double maxAvgY = (approx[0].y + approx[1].y) / 2.0;
+    for (int i = 1; i < 4; ++i) {
+        const double avgY = (approx[i].y + approx[(i + 1) % 4].y) / 2.0;
+        if (avgY > maxAvgY) {
+            maxAvgY = avgY;
+            bottomIdx = i;
+        }
+    }
+
+    const float midX = (approx[bottomIdx].x + approx[(bottomIdx + 1) % 4].x) / 2.0f;
+    const float roiCenterX = roiImg.cols / 2.0f;
+    return midX - roiCenterX;
+}
+
 bool analyzeSegments(cv::Mat& image,
                      const cv::Point2f& center,
                      float radius,
@@ -81,7 +190,7 @@ bool analyzeSegments(cv::Mat& image,
                      float pix2mmScaleX,
                      float pix2mmScaleY,
                      const InThresholdParam& params,
-                     OVYOLOV8Seg& segmenter,
+                     OVYOLOV26& segmenter,
                      float confidence)
 {
     if (image.empty() || totalScale <= 0.0f) return false;
@@ -89,8 +198,7 @@ bool analyzeSegments(cv::Mat& image,
     const double ratio = (pix2mmScaleX * pix2mmScaleY) /
                          (totalScale * totalScale);
     std::vector<Instance> segments;
-    float nms = 0.5f;
-    segmenter.Infer1(image, segments, confidence, nms, 160);
+    segmenter.SegInfer(image, segments, confidence, 160);
     if (segments.empty()) return false;
 
     bool foundSolderMask = false;
@@ -105,8 +213,10 @@ bool analyzeSegments(cv::Mat& image,
         if (segment.label == 0) {
             foundSolderMask = true;
             double maxArea = 0.0;
-            for (const auto& contour : contours)
+            for (const auto& contour : contours) {
+                result.HXrect.push_back(cv::boundingRect(contour));
                 maxArea = (std::max)(maxArea, cv::contourArea(contour));
+            }
             result.HX_Area = maxArea * ratio;
 
             cv::Mat circleMask = cv::Mat::zeros(image.size(), CV_8UC1);
@@ -170,7 +280,7 @@ void process(int cameraId,
              WeldingResult& result,
              const InThresholdParam& params,
              OVYOLOV26& detector,
-             OVYOLOV8Seg& segmenter,
+             OVYOLOV26& segmenter,
              float confidence,
              float segmentationConfidence)
 {
@@ -190,6 +300,7 @@ void process(int cameraId,
     result.hxResult.clear();
     result.HDrect.clear();
     result.LTrect.clear();
+    result.HXrect.clear();
     result.HXGAP_max_contour.clear();
 
     HXResult solder{};
@@ -222,6 +333,7 @@ void process(int cameraId,
     if (boxes.empty()) result.HX_NGReult = kAllErrors;
 
     TBResult pin{};
+    float pinFix = 0.0f;
     bool hasSolder = false;
     bool hasPin = false;
     float solderX1 = 0.0f;
@@ -231,6 +343,8 @@ void process(int cameraId,
     int roiX = 0;
     int roiY = 0;
     cv::Mat solderCrop;
+    // 画框前的干净图像，用于裁取引脚ROI计算梯形偏移
+    const cv::Mat imageForPin = image.clone();
 
     for (const BBox& box : boxes) {
         if (box.label == 0) {
@@ -278,8 +392,7 @@ void process(int cameraId,
                 result.HX_NGReult |= kHxWidthError;
 
             result.hxResult[0] = solder;
-            cv::rectangle(image, cv::Point(solderX1, solderY1),
-                          cv::Point(solderX2, solderY2), cv::Scalar(0, 255, 0), 2);
+            // 焊锡框推迟到分割后绘制：若贴近框唯一则改画贴近框
         } else if (box.label == 1) {
             hasPin = true;
             pin.x1 = box.x1;
@@ -290,6 +403,12 @@ void process(int cameraId,
             pin.YJ_W = box.x2 - box.x1;
             cv::rectangle(image, cv::Point(pin.x1, pin.y1),
                           cv::Point(pin.x2, pin.y2), cv::Scalar(255, 0, 0), 2);
+            const cv::Rect pinRect =
+                cv::Rect(static_cast<int>(pin.x1), static_cast<int>(pin.y1),
+                         static_cast<int>(pin.YJ_W), static_cast<int>(pin.YJ_H)) &
+                cv::Rect(0, 0, imageForPin.cols, imageForPin.rows);
+            if (pinRect.width > 0 && pinRect.height > 0)
+                pinFix = computeTrapezoidOffset(imageForPin(pinRect));
         }
     }
 
@@ -300,7 +419,7 @@ void process(int cameraId,
         cv::Point2f center;
         center.y = ((solderY1 + solderY2) / 2.0f) - roiY;
         center.x = hasPin
-            ? ((pin.x1 + pin.x2) / 2.0f) - roiX
+            ? ((pin.x1 + pin.x2) / 2.0f) - roiX + pinFix
             : ((solderX1 + solderX2) / 2.0f) - roiX;
 
         float cropScale = 1.0f;
@@ -319,9 +438,11 @@ void process(int cameraId,
         result.t_seg = stepTimer.elapsed();
 
         if (!analyzed) {
-            result.HX_NGReult |= kHxAreaError;
-        } else if (result.HX_Area < params.min_area ||
-                   result.HX_Area > params.max_area) {
+            // 面积判定放宽：分割失败仅告警，不置NG
+            qWarning() << "Solder area segmentation failed, camera=" << cameraId + 1;
+        } else if (result.HX_Area != 0.0 &&
+                   (result.HX_Area < params.min_area ||
+                    result.HX_Area > params.max_area)) {
             result.HX_NGReult |= kHxAreaError;
         }
 
@@ -371,12 +492,33 @@ void process(int cameraId,
                               cv::Scalar(0, 255, 255), 2);
             }
         }
+
+        // 焊锡贴近框：分割轮廓唯一时用轮廓外接矩形替代检测框
+        if (result.HXrect.size() != 1) {
+            cv::rectangle(image, cv::Point(solderX1, solderY1),
+                          cv::Point(solderX2, solderY2), cv::Scalar(0, 255, 0), 2);
+        } else {
+            for (const cv::Rect& rect : result.HXrect) {
+                const cv::Point2f topLeft = mapPoint(rect.tl());
+                const cv::Point2f bottomRight = mapPoint(rect.br());
+                cv::rectangle(image,
+                              cv::Rect(static_cast<int>(topLeft.x) - 2,
+                                       static_cast<int>(topLeft.y) - 2,
+                                       static_cast<int>(bottomRight.x - topLeft.x) + 4,
+                                       static_cast<int>(bottomRight.y - topLeft.y) + 4),
+                              cv::Scalar(0, 255, 0), 2);
+                result.hxResult[0].x1 = topLeft.x;
+                result.hxResult[0].y1 = topLeft.y;
+                result.hxResult[0].x2 = bottomRight.x;
+                result.hxResult[0].y2 = bottomRight.y;
+            }
+        }
     }
 
     if (hasPin && hasSolder) {
         HXResult& measuredSolder = result.hxResult[0];
         const float solderCenter = (measuredSolder.x1 + measuredSolder.x2) / 2.0f;
-        const float pinCenter = (pin.x1 + pin.x2) / 2.0f;
+        const float pinCenter = (pin.x1 + pin.x2) / 2.0f + pinFix;
         measuredSolder.PixelPY = pinCenter - solderCenter;
         measuredSolder.center_pianyi =
             (pinCenter - measuredSolder.x1) /
