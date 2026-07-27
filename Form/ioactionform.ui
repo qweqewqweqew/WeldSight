@@ -302,21 +302,21 @@
              <item>
               <widget class="QLabel" name="label_48">
                <property name="text">
-                <string>DI5</string>
+                <string>DI5 (模式切换-Z19) - 低电平触发</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_49">
                <property name="text">
-                <string>DI6</string>
+                <string>DI6 (模式切换-U07) - 低电平触发</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_50">
                <property name="text">
-                <string>DI7</string>
+                <string>DI7 (模式切换-E16) - 低电平触发</string>
                </property>
               </widget>
              </item>
@@ -398,14 +398,14 @@
              <item>
               <widget class="QCheckBox" name="checkBox_13">
                <property name="text">
-                <string>DO5</string>
+                <string>DO5 (治具码应答)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QCheckBox" name="checkBox_14">
                <property name="text">
-                <string>DO6</string>
+                <string>DO6 (外壳码应答)</string>
                </property>
               </widget>
              </item>
