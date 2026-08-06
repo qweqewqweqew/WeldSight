@@ -38,10 +38,10 @@ void WeldingInitializationWorker::doInitialize()
 
 
     Params loadParam;
-    loadParam.weldingdetectorfile = "Bbox640.onnx";
+    loadParam.weldingdetectorfile = "Bbox128.onnx";
     loadParam.conf_thresh = 0.5;
     loadParam.nms_thresh = 0.3;
-    loadParam.Seg_weldingdetectorfile = "YOLOV11S-Seg0724.onnx";
+    loadParam.Seg_weldingdetectorfile = "YOLOV11S-Seg0805.onnx";
     loadParam.Seg_conf_thresh = 0.5;
     loadParam.Seg_nms_thresh = 0.3;
 

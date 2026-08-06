@@ -238,8 +238,8 @@ $(LIBS)
 <<
 	cmd /c if not exist D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug mkdir D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug & copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\VC3000HDLL\bin\VC3000HDLL.dll D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\ >nul 2>&1 
 	 cmd /c copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\lib3rd\ovdetector\release\OVDetector.dll D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\ >nul 2>&1 
-	 cmd /c if not exist D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights mkdir D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights & copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\weights\Bbox640.onnx D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights\ >nul 2>&1 
-	 cmd /c copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\weights\YOLOV11S-Seg1203.onnx D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights\ >nul 2>&1 
+	 cmd /c if not exist D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights mkdir D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights & copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\weights\Bbox128.onnx D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights\ >nul 2>&1
+	 cmd /c copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\weights\YOLOV11S-Seg0805.onnx D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\weights\ >nul 2>&1
 	 cmd /c if not exist D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\data mkdir D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\data & copy /Y D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\data\welding_results.sql D:\QtProj\HanDian\mz-weld-sight\mz-weld-sight\MzWeldSight\Bin\x64\Debug\data\ >nul 2>&1 
 	
 

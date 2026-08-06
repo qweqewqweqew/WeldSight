@@ -242,12 +242,13 @@ bool WeldingDetector::Initialize(Params params)
         m_models->detector[i].LoadOVModel(weldingdetectorfile.c_str(), -1, false);
         qDebug() << "Detector model" << i << "loaded OK";
         cv::Mat image = cv::Mat::zeros(cv::Size(640, 640), CV_8UC3);
+        cv::Mat detectorImage = cv::Mat::zeros(cv::Size(128, 128), CV_8UC3);
         std::vector<BBox> bboxs;
         std::vector<Instance> Segbboxs;
         float confidence = 0.5;
         for (int j = 0; j < 5; j++)
         {
-            m_models->detector[i].Infer(image, bboxs, confidence);
+            m_models->detector[i].Infer(detectorImage, bboxs, confidence);
             m_models->segmenter[i].SegInfer(image, Segbboxs, confidence);
         }
     }
