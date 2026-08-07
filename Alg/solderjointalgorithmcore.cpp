@@ -382,6 +382,10 @@ void processWith128Input(int cameraId,
     result.t_clone = stepTimer.elapsed();
     result.FusionMap = display.clone();
 
+    // 绘制参数按图像分辨率相对 640 基准缩放，保证大图缩放到界面后文字和线条大小一致
+    const double drawScale = (std::max)(display.cols, display.rows) / 640.0;
+    const int drawThickness = (std::max)(1, static_cast<int>(2 * drawScale + 0.5));
+
     float detectionScale = 1.0f;
     int detectionPadX = 0;
     int detectionPadY = 0;
@@ -455,17 +459,6 @@ void processWith128Input(int cameraId,
                     solderCrop = display(cv::Rect(sourceRoiX, sourceRoiY,
                                                   sourceRoiW, sourceRoiH)).clone();
                 }
-            }
-
-            if (params.AutoBDswitch) {
-                std::ostringstream widthText;
-                std::ostringstream heightText;
-                widthText << std::fixed << std::setprecision(2) << width / detectionScale;
-                heightText << std::fixed << std::setprecision(2) << height / detectionScale;
-                cv::putText(display, "BDPix: X:" + widthText.str(), cv::Point(240, 80),
-                            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-                cv::putText(display, "Y:" + heightText.str(), cv::Point(360, 110),
-                            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
             }
 
             solder.hx_weight = (width * pix2mmScaleX) / detectionScale;
@@ -553,7 +546,7 @@ void processWith128Input(int cameraId,
                                        static_cast<int>(topLeft.y) - 2,
                                        static_cast<int>(bottomRight.x - topLeft.x) + 4,
                                        static_cast<int>(bottomRight.y - topLeft.y) + 4),
-                              cv::Scalar(255, 0, 0), 2);
+                              cv::Scalar(255, 0, 0), drawThickness);
             }
         }
 
@@ -562,7 +555,7 @@ void processWith128Input(int cameraId,
             const cv::Point2f mappedCenter = mapPoint(center640);
             const int mappedRadius = static_cast<int>(
                 params.min_radius * solderCrop.cols / cropContentWidth);
-            cv::circle(display, mappedCenter, mappedRadius, cv::Scalar(0, 255, 255), 2);
+            cv::circle(display, mappedCenter, mappedRadius, cv::Scalar(0, 255, 255), drawThickness);
 
             if (!result.HXGAP_max_contour.empty()) {
                 std::vector<std::vector<cv::Point>> mappedContours(1);
@@ -583,7 +576,7 @@ void processWith128Input(int cameraId,
                 const cv::Point2f topLeft = mapPoint(rect.tl());
                 const cv::Point2f bottomRight = mapPoint(rect.br());
                 cv::rectangle(display, cv::Rect(topLeft, bottomRight),
-                              cv::Scalar(0, 125, 155), 2);
+                              cv::Scalar(0, 125, 155), drawThickness);
             }
         }
 
@@ -595,7 +588,7 @@ void processWith128Input(int cameraId,
                 const cv::Point2f topLeft = mapPoint(rect.tl());
                 const cv::Point2f bottomRight = mapPoint(rect.br());
                 cv::rectangle(display, cv::Rect(topLeft, bottomRight),
-                              cv::Scalar(0, 255, 255), 2);
+                              cv::Scalar(0, 255, 255), drawThickness);
             }
         }
 
@@ -608,7 +601,7 @@ void processWith128Input(int cameraId,
                                        static_cast<int>(topLeft.y) - 2,
                                        static_cast<int>(bottomRight.x - topLeft.x) + 4,
                                        static_cast<int>(bottomRight.y - topLeft.y) + 4),
-                              cv::Scalar(0, 255, 0), 2);
+                              cv::Scalar(0, 255, 0), drawThickness);
                 result.hxResult[0].x1 = topLeft.x;
                 result.hxResult[0].y1 = topLeft.y;
                 result.hxResult[0].x2 = bottomRight.x;
@@ -635,14 +628,14 @@ void processWith128Input(int cameraId,
             const cv::Point2f lineEnd = mapPoint(cv::Point2f(
                 solderCenter + measuredSolder.PixelPY,
                 result.YJrect[0].y - 20.0f));
-            cv::line(display, lineStart, lineEnd, cv::Scalar(221, 10, 221), 2);
+            cv::line(display, lineStart, lineEnd, cv::Scalar(221, 10, 221), drawThickness);
 
             const cv::Point2f left = mapPoint(cv::Point2f(
                 result.HXrect[0].x - 20.0f, result.YJrect[0].y));
             const cv::Point2f right = mapPoint(cv::Point2f(
                 result.HXrect[0].x + result.HXrect[0].width + 20.0f,
                 result.YJrect[0].y));
-            cv::line(display, left, right, cv::Scalar(255, 255, 0), 2);
+            cv::line(display, left, right, cv::Scalar(255, 255, 0), drawThickness);
         }
 
         if (hasSolder && result.YJrect.size() == 1) {

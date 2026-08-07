@@ -211,7 +211,10 @@ void WeldingDetector::StopProcessing()
 void WeldingDetector::SetThresholdParams(const InThresholdParam& params)
 {
     std::lock_guard<std::mutex> lock(m_paramMtx);
+    // AutoBDswitch 是本地测试窗口的调试开关，不随算法参数应用被覆盖
+    const bool autoBDswitch = m_inParam.AutoBDswitch;
     m_inParam = params;
+    m_inParam.AutoBDswitch = autoBDswitch;
 }
 
 void WeldingDetector::SetAutoCalibration(bool enabled)

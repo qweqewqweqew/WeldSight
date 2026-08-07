@@ -77,7 +77,7 @@ float resultTextScale(const cv::Mat& image)
     const float widthScale = static_cast<float>(image.cols) / 640.0f;
     const float heightScale = static_cast<float>(image.rows) / 480.0f;
     const float scale = (std::max)(widthScale, heightScale);
-    return (std::max)(1.0f, (std::min)(scale, 4.0f));
+    return (std::max)(1.0f, scale);
 }
 
 std::vector<LineStyle> scaleLineStyles(const std::vector<LineStyle>& styles,
@@ -446,14 +446,33 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             errorColumns = errorColIndices;
         }
 
+        // 存档图：在原分辨率上按比例放大字号，保证存档文字清晰
         const float textScale = resultTextScale(result.dst);
         const std::vector<LineStyle> scaledStyles = scaleLineStyles(styles, textScale);
         const cv::Point textOrigin(
             static_cast<int>(30 * textScale + 0.5f),
             static_cast<int>(100 * textScale + 0.5f));
         const int lineSpacing = static_cast<int>(10 * textScale + 0.5f);
-        QImage pix = cvqt::drawImgText(result.dst, lines, scaledStyles,
-                                       textOrigin, lineSpacing);
+        QImage archivePix = cvqt::drawImgText(result.dst, lines, scaledStyles,
+                                              textOrigin, lineSpacing);
+
+        // 界面显示：先把结果图缩放到长边 640 的固定画布，再用固定字号画字，
+        // 这样无论原图分辨率多大，界面上的文字大小都保持一致
+        cv::Mat displaySrc = result.dst;
+        // 特殊旋转焊点的结果是横版图，显示前拉回竖版尺寸，
+        // 保证界面上与未旋转焊点的显示大小一致（仅影响显示，不影响算法和存档）
+        if (displaySrc.cols > displaySrc.rows) {
+            cv::resize(displaySrc, displaySrc,
+                       cv::Size(displaySrc.rows, displaySrc.cols),
+                       0, 0, cv::INTER_LINEAR);
+        }
+        const double displayScale =
+            640.0 / (std::max)(displaySrc.cols, displaySrc.rows);
+        cv::Mat displayMat;
+        cv::resize(displaySrc, displayMat, cv::Size(),
+                   displayScale, displayScale, cv::INTER_AREA);
+        QImage pix = cvqt::drawImgText(displayMat, lines, styles,
+                                       cv::Point(30, 100), 10);
         face.setDisplayImage(result.id, 1, pix);
 
         QStringList headers = {};
@@ -532,7 +551,7 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
 
         weData.NO_HX_NGReults = result.NO_HX_NGReults;
         weData.HX_NGReult = result.HX_NGReult; // 保存位掩码
-        weData.dst = cvqt::qImageToCvMat(pix);
+        weData.dst = cvqt::qImageToCvMat(archivePix);
         const QString resultImageName = makeResultImageName(
             m_vTriggerIndexs[result.id], cameraId, result.NO_HX_NGReults);
         // 保存检测结果图像
