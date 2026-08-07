@@ -29,6 +29,8 @@
 #include <Common/SysEnv.h>
 #include <Common/cvqt_text.hpp>
 
+#include <algorithm>
+
 namespace {
 
 QString resultSuffix(DetectionRsult result)
@@ -66,6 +68,26 @@ QVector<int> initialDisplayWeldPointIndexes()
 int displayRowsPerSide()
 {
     return SysEnv::instance().productNEnd();
+}
+
+float resultTextScale(const cv::Mat& image)
+{
+    if (image.empty()) return 1.0f;
+
+    const float widthScale = static_cast<float>(image.cols) / 640.0f;
+    const float heightScale = static_cast<float>(image.rows) / 480.0f;
+    const float scale = (std::max)(widthScale, heightScale);
+    return (std::max)(1.0f, (std::min)(scale, 4.0f));
+}
+
+std::vector<LineStyle> scaleLineStyles(const std::vector<LineStyle>& styles,
+                                       float scale)
+{
+    std::vector<LineStyle> scaled = styles;
+    for (LineStyle& style : scaled) {
+        style.fontSize = (std::max)(1, static_cast<int>(style.fontSize * scale + 0.5f));
+    }
+    return scaled;
 }
 
 }
@@ -424,7 +446,14 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             errorColumns = errorColIndices;
         }
 
-        QImage pix = cvqt::drawImgText(result.dst, lines, styles, cv::Point(30,100));
+        const float textScale = resultTextScale(result.dst);
+        const std::vector<LineStyle> scaledStyles = scaleLineStyles(styles, textScale);
+        const cv::Point textOrigin(
+            static_cast<int>(30 * textScale + 0.5f),
+            static_cast<int>(100 * textScale + 0.5f));
+        const int lineSpacing = static_cast<int>(10 * textScale + 0.5f);
+        QImage pix = cvqt::drawImgText(result.dst, lines, scaledStyles,
+                                       textOrigin, lineSpacing);
         face.setDisplayImage(result.id, 1, pix);
 
         QStringList headers = {};
