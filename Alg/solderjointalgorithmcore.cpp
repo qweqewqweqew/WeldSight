@@ -213,6 +213,7 @@ bool analyzeSegments(cv::Mat& image,
     if (segments.empty()) return false;
 
     bool foundSolderMask = false;
+    cv::Mat solderMask;
     for (const Instance& segment : segments) {
         cv::Mat binaryMask;
         cv::threshold(segment.mask, binaryMask, 0, 255, cv::THRESH_BINARY);
@@ -223,40 +224,16 @@ bool analyzeSegments(cv::Mat& image,
 
         if (segment.label == 0) {
             foundSolderMask = true;
-            double maxArea = 0.0;
-            for (const auto& contour : contours) {
-                result.HXrect.push_back(cv::boundingRect(contour));
-                maxArea = (std::max)(maxArea, cv::contourArea(contour));
-            }
-            result.HX_Area = maxArea * ratio;
-
-            cv::Mat circleMask = cv::Mat::zeros(image.size(), CV_8UC1);
-            cv::circle(circleMask, center, static_cast<int>(radius), cv::Scalar(255), -1);
-            cv::Mat solderInCircle;
-            cv::Mat difference;
-            cv::Mat outsideCircle;
-            cv::bitwise_and(binaryMask, circleMask, solderInCircle);
-            cv::bitwise_xor(circleMask, solderInCircle, difference);
-            cv::bitwise_xor(binaryMask, solderInCircle, outsideCircle);
-            if (cv::countNonZero(outsideCircle) == 0) {
-                cv::line(difference,
-                         cv::Point(static_cast<int>(center.x), static_cast<int>(center.y)),
-                         cv::Point(static_cast<int>(center.x), 0),
-                         cv::Scalar(0), 2, cv::LINE_8);
-            }
-            result.HX_DiffArea = cv::countNonZero(difference) * ratio;
-            result.HX_Gap = true;
-
-            std::vector<std::vector<cv::Point>> differenceContours;
-            cv::findContours(difference, differenceContours,
-                             cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-            if (!differenceContours.empty()) {
-                const auto largest = std::max_element(
-                    differenceContours.begin(), differenceContours.end(),
-                    [](const auto& lhs, const auto& rhs) {
-                        return cv::contourArea(lhs) < cv::contourArea(rhs);
-                    });
-                result.HXGAP_max_contour = {*largest};
+            const auto largest = std::max_element(
+                contours.begin(), contours.end(),
+                [](const auto& lhs, const auto& rhs) {
+                    return cv::contourArea(lhs) < cv::contourArea(rhs);
+                });
+            const double maxArea = cv::contourArea(*largest);
+            if (maxArea > 0.0) {
+                result.HXrect.push_back(cv::boundingRect(*largest));
+                result.HX_Area = maxArea * ratio;
+                solderMask = binaryMask.clone();
             }
         } else if (segment.label == 1) {
             result.HD_Flag = true;
@@ -325,6 +302,41 @@ bool analyzeSegments(cv::Mat& image,
                 }
             }
             center.x = (approx[bottomIdx].x + approx[(bottomIdx + 1) % 4].x) / 2.0f;
+        }
+    }
+
+    if (foundSolderMask && !result.HXrect.empty() && !solderMask.empty()) {
+        center.y = result.HXrect[0].y + result.HXrect[0].height / 2.0f;
+        if (center.x == 0.0f)
+            center.x = result.HXrect[0].x + result.HXrect[0].width / 2.0f;
+
+        cv::Mat circleMask = cv::Mat::zeros(image.size(), CV_8UC1);
+        cv::circle(circleMask, center, static_cast<int>(radius), cv::Scalar(255), -1);
+        cv::Mat solderInCircle;
+        cv::Mat difference;
+        cv::Mat outsideCircle;
+        cv::bitwise_and(solderMask, circleMask, solderInCircle);
+        cv::bitwise_xor(circleMask, solderInCircle, difference);
+        cv::bitwise_xor(solderMask, solderInCircle, outsideCircle);
+        if (cv::countNonZero(outsideCircle) == 0) {
+            cv::line(difference,
+                     cv::Point(static_cast<int>(center.x), static_cast<int>(center.y)),
+                     cv::Point(static_cast<int>(center.x), 0),
+                     cv::Scalar(0), 2, cv::LINE_8);
+        }
+        result.HX_DiffArea = cv::countNonZero(difference) * ratio;
+        result.HX_Gap = true;
+
+        std::vector<std::vector<cv::Point>> differenceContours;
+        cv::findContours(difference, differenceContours,
+                         cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+        if (!differenceContours.empty()) {
+            const auto largest = std::max_element(
+                differenceContours.begin(), differenceContours.end(),
+                [](const auto& lhs, const auto& rhs) {
+                    return cv::contourArea(lhs) < cv::contourArea(rhs);
+                });
+            result.HXGAP_max_contour = {*largest};
         }
     }
 
