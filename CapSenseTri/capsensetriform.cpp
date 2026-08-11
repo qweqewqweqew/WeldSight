@@ -456,18 +456,13 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
         QImage archivePix = cvqt::drawImgText(result.dst, lines, scaledStyles,
                                               textOrigin, lineSpacing);
 
-        // 界面显示：先把结果图缩放到长边 640 的固定画布，再用固定字号画字，
-        // 这样无论原图分辨率多大，界面上的文字大小都保持一致
+        // 界面显示：保持原始宽高比缩放，避免特殊旋转焊点被交换宽高后拉伸变形。
+        // 特殊横版图的显示尺寸缩小 1/5，普通图仍保持长边 640。
         cv::Mat displaySrc = result.dst;
-        // 特殊旋转焊点的结果是横版图，显示前拉回竖版尺寸，
-        // 保证界面上与未旋转焊点的显示大小一致（仅影响显示，不影响算法和存档）
-        if (displaySrc.cols > displaySrc.rows) {
-            cv::resize(displaySrc, displaySrc,
-                       cv::Size(displaySrc.rows, displaySrc.cols),
-                       0, 0, cv::INTER_LINEAR);
-        }
+        const bool isRotatedLandscape = displaySrc.cols > displaySrc.rows;
+        const double targetLongSide = isRotatedLandscape ? 640.0 * 0.8 : 640.0;
         const double displayScale =
-            640.0 / (std::max)(displaySrc.cols, displaySrc.rows);
+            targetLongSide / (std::max)(displaySrc.cols, displaySrc.rows);
         cv::Mat displayMat;
         cv::resize(displaySrc, displayMat, cv::Size(),
                    displayScale, displayScale, cv::INTER_AREA);
