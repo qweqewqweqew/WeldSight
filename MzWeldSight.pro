@@ -155,7 +155,7 @@ win32 {
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$PWD/lib3rd/ovdetector/release)\\OVDetector.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += $$quote(cmd /c "if not exist $$shell_path($$DESTDIR)\\weights mkdir $$shell_path($$DESTDIR)\\weights & copy /Y $$shell_path($$PWD/weights)\\Bbox128.onnx $$shell_path($$DESTDIR)\\weights\\ >nul 2>&1")
+    QMAKE_POST_LINK += $$quote(cmd /c "if not exist $$shell_path($$DESTDIR)\\weights mkdir $$shell_path($$DESTDIR)\\weights & copy /Y $$shell_path($$PWD/weights)\\Bbox640.onnx $$shell_path($$DESTDIR)\\weights\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$PWD/weights)\\YOLOV11S-Seg0805.onnx $$shell_path($$DESTDIR)\\weights\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)

@@ -209,7 +209,7 @@ bool analyzeSegments(cv::Mat& image,
     const double ratio = (pix2mmScaleX * pix2mmScaleY) /
                          (totalScale * totalScale);
     std::vector<Instance> segments;
-    segmenter.SegInfer(image, segments, confidence, 160);
+    segmenter.SegInfer(image, segments, confidence, 150);
     if (segments.empty()) return false;
 
     bool foundSolderMask = false;
@@ -343,7 +343,7 @@ bool analyzeSegments(cv::Mat& image,
     return foundSolderMask;
 }
 
-void processWith128Input(int cameraId,
+void processWith640Input(int cameraId,
                          const cv::Mat& source,
                          WeldingResult& result,
                          const InThresholdParam& params,
@@ -390,7 +390,8 @@ void processWith128Input(int cameraId,
     int detectionPadX = 0;
     int detectionPadY = 0;
     stepTimer.restart();
-    cv::Mat detectionImage = resizePad(display, 128, 128,
+    // 交付版流程：原图 resizePad 到 640×640 做目标检测（Bbox640.onnx）
+    cv::Mat detectionImage = resizePad(display, 640, 640,
                                        detectionScale, detectionPadX, detectionPadY);
     result.t_resize = stepTimer.elapsed();
     const int detectionContentWidth = static_cast<int>(display.cols * detectionScale);
@@ -403,14 +404,16 @@ void processWith128Input(int cameraId,
 
     std::vector<BBox> boxes;
     stepTimer.restart();
-    detector.Infer(detectionImage, boxes, confidence, 50);
+    detector.Infer(detectionImage, boxes, confidence, 150);
     result.t_infer = stepTimer.elapsed();
     result.inferTime = result.t_infer;
 
     if (boxes.empty()) result.HX_NGReult = kAllErrors;
 
     TBResult pin{};
+    float pinMaxArea = 0.0f;
     float pinFix = 0.0f;
+    float pinCenterSrcX = 0.0f;
     bool hasSolder = false;
     bool hasPin = false;
     float solderX1 = 0.0f;
@@ -432,7 +435,8 @@ void processWith128Input(int cameraId,
             const float width = solderX2 - solderX1;
             const float height = solderY2 - solderY1;
 
-            constexpr int expansion = 30;
+            // 交付版：640 画布上外扩 EXPAN=100，再映射回原图裁剪
+            constexpr int expansion = 100;
             const int roiX = (std::max)(0, static_cast<int>(solderX1 - expansion));
             const int roiY = (std::max)(0, static_cast<int>(solderY1 - expansion));
             const int roiRight = (std::min)(detectionImage.cols,
@@ -463,42 +467,55 @@ void processWith128Input(int cameraId,
 
             solder.hx_weight = (width * pix2mmScaleX) / detectionScale;
             solder.hx_height = (height * pix2mmScaleY) / detectionScale;
+            // 交付版语义：HX_Area 先用检测框宽×高兜底，分割成功后由掩膜面积覆盖
+            result.HX_Area = solder.hx_weight * solder.hx_height;
             solder.x1 = solderX1;
             solder.y1 = solderY1;
             solder.x2 = solderX2;
             solder.y2 = solderY2;
 
-            if (solder.hx_height < params.min_h || solder.hx_height > params.max_h)
-                result.HX_NGReult |= kHxHeightError;
-            if (solder.hx_weight < params.min_w || solder.hx_weight > params.max_w)
-                result.HX_NGReult |= kHxWidthError;
-
             result.hxResult[0] = solder;
         } else if (box.label == 1) {
             hasPin = true;
-            pin.x1 = box.x1;
-            pin.y1 = box.y1;
-            pin.x2 = box.x2;
-            pin.y2 = box.y2;
-            pin.YJ_H = box.y2 - box.y1;
-            pin.YJ_W = box.x2 - box.x1;
-            const cv::Rect pinRect =
-                cv::Rect(static_cast<int>(pin.x1), static_cast<int>(pin.y1),
-                         static_cast<int>(pin.YJ_W), static_cast<int>(pin.YJ_H)) &
-                cv::Rect(0, 0, imageForPin.cols, imageForPin.rows);
-            if (pinRect.width > 0 && pinRect.height > 0)
-                pinFix = computeTrapezoidOffset(imageForPin(pinRect));
+            // 交付版语义：多引脚时取面积最大的框
+            const float pinH = box.y2 - box.y1;
+            const float pinW = box.x2 - box.x1;
+            if (pinH * pinW > pinMaxArea) {
+                pinMaxArea = pinH * pinW;
+                pin.x1 = box.x1;
+                pin.y1 = box.y1;
+                pin.x2 = box.x2;
+                pin.y2 = box.y2;
+                pin.YJ_H = pinH;
+                pin.YJ_W = pinW;
+            }
+        }
+    }
+
+    // 对最终选中的引脚在 640 画布上计算一次梯形修正，
+    // 随后将引脚中心与检测框映射回原图坐标（与交付版一致）
+    if (hasPin) {
+        const cv::Rect pinRect =
+            cv::Rect(static_cast<int>(pin.x1), static_cast<int>(pin.y1),
+                     static_cast<int>(pin.YJ_W), static_cast<int>(pin.YJ_H)) &
+            cv::Rect(0, 0, imageForPin.cols, imageForPin.rows);
+        if (pinRect.width > 0 && pinRect.height > 0)
+            pinFix = computeTrapezoidOffset(imageForPin(pinRect));
+
+        if (detectionContentWidth > 0 && detectionContentHeight > 0) {
+            pinCenterSrcX = (pin.x1 - detectionPadX + pin.YJ_W / 2.0f + pinFix) *
+                static_cast<float>(display.cols) / detectionContentWidth;
+            pin.x1 = (pin.x1 - detectionPadX) *
+                static_cast<float>(display.cols) / detectionContentWidth;
+            pin.y1 = (pin.y1 - detectionPadY) *
+                static_cast<float>(display.rows) / detectionContentHeight;
+            pin.YJ_W = pin.YJ_W * static_cast<float>(display.cols) / detectionContentWidth;
+            pin.YJ_H = pin.YJ_H * static_cast<float>(display.rows) / detectionContentHeight;
         }
     }
 
     if (hasSolder && !solderCrop.empty() &&
         detectionContentWidth > 0 && detectionContentHeight > 0) {
-        cv::Point2f detectionCenter;
-        detectionCenter.y = (solderY1 + solderY2) / 2.0f;
-        detectionCenter.x = hasPin
-            ? (pin.x1 + pin.x2) / 2.0f + pinFix
-            : (solderX1 + solderX2) / 2.0f;
-
         float cropScale = 1.0f;
         int cropPadX = 0;
         int cropPadY = 0;
@@ -506,13 +523,14 @@ void processWith128Input(int cameraId,
                                     cropScale, cropPadX, cropPadY);
         const int cropContentWidth = static_cast<int>(solderCrop.cols * cropScale);
         const int cropContentHeight = static_cast<int>(solderCrop.rows * cropScale);
-        cv::Point2f sourceCenter(
-            (detectionCenter.x - detectionPadX) * static_cast<float>(display.cols) /
-                detectionContentWidth - sourceRoiX,
-            (detectionCenter.y - detectionPadY) * static_cast<float>(display.rows) /
-                detectionContentHeight - sourceRoiY);
-        cv::Point2f center640(sourceCenter.x * cropScale + cropPadX,
-                              sourceCenter.y * cropScale + cropPadY);
+
+        // 将检测得到的引脚中心从原图坐标转换到带 padding 的 640 裁剪坐标。
+        // 分割检出引脚（label 3）时，center.x 会由掩膜拟合的底边中心覆盖。
+        cv::Point2f center640(0.0f, 0.0f);
+        if (pinCenterSrcX > 0.0f) {
+            center640.x =
+                (pinCenterSrcX - sourceRoiX) * cropScale + cropPadX;
+        }
 
         stepTimer.restart();
         const bool analyzed = analyzeSegments(
@@ -523,10 +541,23 @@ void processWith128Input(int cameraId,
 
         if (!analyzed) {
             qWarning() << "Solder area segmentation failed, camera=" << cameraId + 1;
-        } else if (result.HX_Area != 0.0 &&
-                   (result.HX_Area < params.min_area ||
-                    result.HX_Area > params.max_area)) {
-            result.HX_NGReult |= kHxAreaError;
+        } else {
+            // 交付版语义：高/宽/面积 NG 只在分割成功时判定
+            float measuredHeight = solder.hx_height;
+            float measuredWidth = solder.hx_weight;
+            if (!result.HXrect.empty()) {
+                measuredHeight = result.HXrect[0].height * pix2mmScaleY / cropScale;
+                measuredWidth = result.HXrect[0].width * pix2mmScaleX / cropScale;
+            }
+            if (measuredHeight < params.min_h || measuredHeight > params.max_h)
+                result.HX_NGReult |= kHxHeightError;
+            if (measuredWidth < params.min_w || measuredWidth > params.max_w)
+                result.HX_NGReult |= kHxWidthError;
+            if (result.HX_Area != 0.0 &&
+                (result.HX_Area < params.min_area ||
+                 result.HX_Area > params.max_area)) {
+                result.HX_NGReult |= kHxAreaError;
+            }
         }
 
         const auto mapPoint = [&](const cv::Point2f& point) {
@@ -537,6 +568,7 @@ void processWith128Input(int cameraId,
         };
 
         if (!result.YJrect.empty()) {
+            // 交付版：分割检出引脚同样视为有引脚
             hasPin = true;
             for (const cv::Rect& rect : result.YJrect) {
                 const cv::Point2f topLeft = mapPoint(rect.tl());
@@ -607,9 +639,29 @@ void processWith128Input(int cameraId,
                 result.hxResult[0].x2 = bottomRight.x;
                 result.hxResult[0].y2 = bottomRight.y;
             }
+        } else if (hasSolder && detectionContentWidth > 0 && detectionContentHeight > 0) {
+            const cv::Point2f topLeft(
+                (solderX1 - detectionPadX) * display.cols / detectionContentWidth,
+                (solderY1 - detectionPadY) * display.rows / detectionContentHeight);
+            const cv::Point2f bottomRight(
+                (solderX2 - detectionPadX) * display.cols / detectionContentWidth,
+                (solderY2 - detectionPadY) * display.rows / detectionContentHeight);
+            const cv::Rect detectedRect =
+                cv::Rect(static_cast<int>(topLeft.x) - 2,
+                         static_cast<int>(topLeft.y) - 2,
+                         static_cast<int>(bottomRight.x - topLeft.x) + 4,
+                         static_cast<int>(bottomRight.y - topLeft.y) + 4) &
+                cv::Rect(0, 0, display.cols, display.rows);
+            if (detectedRect.width > 0 && detectedRect.height > 0)
+                cv::rectangle(display, detectedRect, cv::Scalar(0, 255, 0), drawThickness);
+            result.hxResult[0].x1 = topLeft.x;
+            result.hxResult[0].y1 = topLeft.y;
+            result.hxResult[0].x2 = bottomRight.x;
+            result.hxResult[0].y2 = bottomRight.y;
         }
 
-        if (result.YJrect.size() == 1 && result.HXrect.size() == 1) {
+        // 交付版条件：有引脚（检测或分割检出）且焊锡贴近框唯一
+        if (hasPin && result.HXrect.size() == 1) {
             HXResult& measuredSolder = result.hxResult[0];
             const float solderCenter =
                 result.HXrect[0].x + result.HXrect[0].width / 2.0f;
@@ -622,26 +674,65 @@ void processWith128Input(int cameraId,
                 measuredSolder.center_pianyi < params.min_PY)
                 result.HX_NGReult |= kHxOffsetError;
 
-            const cv::Point2f lineStart = mapPoint(cv::Point2f(
-                solderCenter + measuredSolder.PixelPY,
-                result.HXrect[0].y + result.HXrect[0].height + 20.0f));
-            const cv::Point2f lineEnd = mapPoint(cv::Point2f(
-                solderCenter + measuredSolder.PixelPY,
-                result.YJrect[0].y - 20.0f));
+            cv::Point2f lineStart;
+            cv::Point2f lineEnd;
+            cv::Point2f left;
+            cv::Point2f right;
+            if (!result.YJrect.empty()) {
+                lineStart = mapPoint(cv::Point2f(
+                    solderCenter + measuredSolder.PixelPY,
+                    result.HXrect[0].y + result.HXrect[0].height + 20.0f));
+                lineEnd = mapPoint(cv::Point2f(
+                    solderCenter + measuredSolder.PixelPY,
+                    result.YJrect[0].y - 20.0f));
+                left = mapPoint(cv::Point2f(
+                    result.HXrect[0].x - 20.0f, result.YJrect[0].y));
+                right = mapPoint(cv::Point2f(
+                    result.HXrect[0].x + result.HXrect[0].width + 20.0f,
+                    result.YJrect[0].y));
+            } else {
+                // 交付版兜底：分割未检出引脚时用检测框（已映射原图坐标）画线
+                const float pointx640 =
+                    static_cast<float>(solderCrop.cols) / cropContentWidth;
+                const float pointy640 =
+                    static_cast<float>(solderCrop.rows) / cropContentHeight;
+                lineStart = cv::Point2f(
+                    (solderCenter + measuredSolder.PixelPY - cropPadX) * pointx640 + sourceRoiX,
+                    (result.HXrect[0].y + result.HXrect[0].height + 20.0f - cropPadY) *
+                        pointy640 + sourceRoiY);
+                lineEnd = cv::Point2f(
+                    (solderCenter + measuredSolder.PixelPY - cropPadX) * pointx640 + sourceRoiX,
+                    pin.y1 - 20.0f);
+                left = cv::Point2f(
+                    (result.HXrect[0].x - 20.0f - cropPadX) * pointx640 + sourceRoiX,
+                    pin.y1);
+                right = cv::Point2f(
+                    (result.HXrect[0].x + result.HXrect[0].width + 20.0f - cropPadX) *
+                        pointx640 + sourceRoiX,
+                    pin.y1);
+                cv::rectangle(display,
+                              cv::Rect(static_cast<int>(pin.x1),
+                                       static_cast<int>(pin.y1),
+                                       static_cast<int>(pin.YJ_W),
+                                       static_cast<int>(pin.YJ_H)),
+                              cv::Scalar(255, 0, 0), drawThickness);
+            }
             cv::line(display, lineStart, lineEnd, cv::Scalar(221, 10, 221), drawThickness);
-
-            const cv::Point2f left = mapPoint(cv::Point2f(
-                result.HXrect[0].x - 20.0f, result.YJrect[0].y));
-            const cv::Point2f right = mapPoint(cv::Point2f(
-                result.HXrect[0].x + result.HXrect[0].width + 20.0f,
-                result.YJrect[0].y));
             cv::line(display, left, right, cv::Scalar(255, 255, 0), drawThickness);
         }
 
-        if (hasSolder && result.YJrect.size() == 1) {
+        if (hasSolder && hasPin) {
             HXResult& measuredSolder = result.hxResult[0];
+            float pinHeight;
+            if (!result.YJrect.empty()) {
+                pinHeight = static_cast<float>(result.YJrect[0].height);
+            } else {
+                // 交付版兜底：分割未检出引脚时用检测框高度（已映射回原图坐标），
+                // 此处再乘一次裁剪比与交付版保持一致
+                pinHeight = pin.YJ_H;
+            }
             measuredSolder.Pixeldis =
-                (std::max)(result.YJrect[0].height - 1.0f, 0.0f) *
+                (std::max)(pinHeight - 1.0f, 0.0f) *
                 solderCrop.cols / cropContentWidth;
             measuredSolder.TBtoHX_distance = measuredSolder.Pixeldis * pix2mmScaleY;
             if (measuredSolder.TBtoHX_distance > params.max_TBDis)
@@ -671,7 +762,7 @@ void process(int cameraId,
              float confidence,
              float segmentationConfidence)
 {
-    processWith128Input(cameraId, source, result, params, detector, segmenter,
+    processWith640Input(cameraId, source, result, params, detector, segmenter,
                         confidence, segmentationConfidence);
     return;
 
