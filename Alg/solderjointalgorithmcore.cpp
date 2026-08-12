@@ -548,6 +548,8 @@ void processWith640Input(int cameraId,
             if (!result.HXrect.empty()) {
                 measuredHeight = result.HXrect[0].height * pix2mmScaleY / cropScale;
                 measuredWidth = result.HXrect[0].width * pix2mmScaleX / cropScale;
+                result.hxResult[0].hx_height = measuredHeight;
+                result.hxResult[0].hx_weight = measuredWidth;
             }
             if (measuredHeight < params.min_h || measuredHeight > params.max_h)
                 result.HX_NGReult |= kHxHeightError;
@@ -723,17 +725,15 @@ void processWith640Input(int cameraId,
 
         if (hasSolder && hasPin) {
             HXResult& measuredSolder = result.hxResult[0];
-            float pinHeight;
             if (!result.YJrect.empty()) {
-                pinHeight = static_cast<float>(result.YJrect[0].height);
+                measuredSolder.Pixeldis =
+                    (std::max)(result.YJrect[0].height - 0.01f, 0.0f) *
+                    static_cast<float>(solderCrop.rows) / cropContentHeight;
             } else {
-                // 交付版兜底：分割未检出引脚时用检测框高度（已映射回原图坐标），
-                // 此处再乘一次裁剪比与交付版保持一致
-                pinHeight = pin.YJ_H;
+                // 检测引脚框高度已经映射回原图坐标，不再进行裁剪缩放。
+                measuredSolder.Pixeldis =
+                    (std::max)(pin.YJ_H - 0.01f, 0.0f);
             }
-            measuredSolder.Pixeldis =
-                (std::max)(pinHeight - 1.0f, 0.0f) *
-                solderCrop.cols / cropContentWidth;
             measuredSolder.TBtoHX_distance = measuredSolder.Pixeldis * pix2mmScaleY;
             if (measuredSolder.TBtoHX_distance > params.max_TBDis)
                 result.HX_NGReult |= kPinDistanceError;
