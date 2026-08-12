@@ -11,6 +11,7 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDateEdit>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
@@ -60,6 +61,7 @@ public:
     QSpacerItem *horizontalSpacer_3;
     QPushButton *Bt_NextPage;
     QPushButton *Bt_Delete;
+    QCheckBox *cb_SelectAllResults;
     QSpacerItem *horizontalSpacer;
     QPushButton *Bt_Search;
     QPushButton *Bt_Export;
@@ -287,13 +289,13 @@ public:
         gridLayout_3->setObjectName(QString::fromUtf8("gridLayout_3"));
         horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        gridLayout_3->addItem(horizontalSpacer_3, 0, 5, 1, 1);
+        gridLayout_3->addItem(horizontalSpacer_3, 0, 6, 1, 1);
 
         Bt_NextPage = new QPushButton(Data_gBox_3);
         Bt_NextPage->setObjectName(QString::fromUtf8("Bt_NextPage"));
         Bt_NextPage->setMinimumSize(QSize(80, 30));
 
-        gridLayout_3->addWidget(Bt_NextPage, 0, 4, 1, 1);
+        gridLayout_3->addWidget(Bt_NextPage, 0, 5, 1, 1);
 
         Bt_Delete = new QPushButton(Data_gBox_3);
         Bt_Delete->setObjectName(QString::fromUtf8("Bt_Delete"));
@@ -301,36 +303,42 @@ public:
 
         gridLayout_3->addWidget(Bt_Delete, 0, 0, 1, 1);
 
+        cb_SelectAllResults = new QCheckBox(Data_gBox_3);
+        cb_SelectAllResults->setObjectName(QString::fromUtf8("cb_SelectAllResults"));
+        cb_SelectAllResults->setMinimumSize(QSize(120, 30));
+
+        gridLayout_3->addWidget(cb_SelectAllResults, 0, 1, 1, 1);
+
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        gridLayout_3->addItem(horizontalSpacer, 0, 2, 1, 1);
+        gridLayout_3->addItem(horizontalSpacer, 0, 3, 1, 1);
 
         Bt_Search = new QPushButton(Data_gBox_3);
         Bt_Search->setObjectName(QString::fromUtf8("Bt_Search"));
         Bt_Search->setMinimumSize(QSize(80, 30));
 
-        gridLayout_3->addWidget(Bt_Search, 0, 1, 1, 1);
+        gridLayout_3->addWidget(Bt_Search, 0, 2, 1, 1);
 
         Bt_Export = new QPushButton(Data_gBox_3);
         Bt_Export->setObjectName(QString::fromUtf8("Bt_Export"));
         Bt_Export->setMinimumSize(QSize(80, 30));
 
-        gridLayout_3->addWidget(Bt_Export, 0, 8, 1, 1);
+        gridLayout_3->addWidget(Bt_Export, 0, 9, 1, 1);
 
         labPage = new QLabel(Data_gBox_3);
         labPage->setObjectName(QString::fromUtf8("labPage"));
 
-        gridLayout_3->addWidget(labPage, 0, 6, 1, 1);
+        gridLayout_3->addWidget(labPage, 0, 7, 1, 1);
 
         horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        gridLayout_3->addItem(horizontalSpacer_2, 0, 7, 1, 1);
+        gridLayout_3->addItem(horizontalSpacer_2, 0, 8, 1, 1);
 
         Bt_PrePage = new QPushButton(Data_gBox_3);
         Bt_PrePage->setObjectName(QString::fromUtf8("Bt_PrePage"));
         Bt_PrePage->setMinimumSize(QSize(80, 30));
 
-        gridLayout_3->addWidget(Bt_PrePage, 0, 3, 1, 1);
+        gridLayout_3->addWidget(Bt_PrePage, 0, 4, 1, 1);
 
 
         gridLayout_2->addWidget(Data_gBox_3, 2, 0, 1, 1);
@@ -364,6 +372,10 @@ public:
         Data_gBox_3->setTitle(QString());
         Bt_NextPage->setText(QCoreApplication::translate("DataForm", "\344\270\213\344\270\200\351\241\265", nullptr));
         Bt_Delete->setText(QCoreApplication::translate("DataForm", "\345\210\240\351\231\244", nullptr));
+#if QT_CONFIG(tooltip)
+        cb_SelectAllResults->setToolTip(QCoreApplication::translate("DataForm", "\345\213\276\351\200\211\345\275\223\345\211\215\346\237\245\350\257\242\346\235\241\344\273\266\344\270\213\347\232\204\345\205\250\351\203\250\350\256\260\345\275\225\357\274\214\344\273\205\347\224\250\344\272\216\345\210\240\351\231\244", nullptr));
+#endif // QT_CONFIG(tooltip)
+        cb_SelectAllResults->setText(QCoreApplication::translate("DataForm", "\345\205\250\351\200\211\346\211\200\346\234\211\350\256\260\345\275\225", nullptr));
         Bt_Search->setText(QCoreApplication::translate("DataForm", "\350\257\246\346\203\205", nullptr));
         Bt_Export->setText(QCoreApplication::translate("DataForm", "\345\257\274\345\207\272", nullptr));
         labPage->setText(QCoreApplication::translate("DataForm", "1/1", nullptr));

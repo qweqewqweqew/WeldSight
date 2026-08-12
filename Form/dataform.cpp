@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QDesktopServices>
 #include <QProgressDialog>
+#include <QSignalBlocker>
 #include <QTextCodec>
 
 namespace {
@@ -69,6 +70,8 @@ DataForm::DataForm(QWidget *parent) :
 
     connect(ui->tableWidget->verticalScrollBar(), SIGNAL(valueChanged(int)),
             this, SLOT(OnSlideAction(int)));
+    connect(ui->tableWidget, &QTableWidget::itemSelectionChanged,
+            this, &DataForm::updateSelectionActions);
 
     // 样式设置
     QFile file(":/qss/dlg.qss");
@@ -165,6 +168,7 @@ void DataForm::updateWeldingData()
 
     m_currentResults = m_sql.queryWeldingResultsByTimeRange(startTime, endTime);
 
+    ui->tableWidget->clearSelection();
     ui->tableWidget->clearContents();
 
     // 计算分页
@@ -175,6 +179,7 @@ void DataForm::updateWeldingData()
     }
 
     if (m_nTotalPages == 0) m_nTotalPages = 1;
+    m_nCurPage = qBound(1, m_nCurPage, m_nTotalPages);
 
     ui->labPage->setText(QString("%1/%2").arg(m_nCurPage).arg(m_nTotalPages));
 
@@ -241,6 +246,11 @@ void DataForm::updateWeldingData()
             }
         }
     }
+
+    ui->cb_SelectAllResults->setEnabled(!m_currentResults.isEmpty());
+    if (m_selectAllResults)
+        ui->tableWidget->selectAll();
+    updateSelectionActions();
 }
 
 void DataForm::OnSlideAction(int nRowIndex)
@@ -274,22 +284,20 @@ void DataForm::on_Bt_NextPage_clicked()
 
 void DataForm::on_Bt_Delete_clicked()
 {
-    // 获取所有选中的行
-    QList<QTableWidgetItem*> selectedItems = ui->tableWidget->selectedItems();
-    if (selectedItems.isEmpty()) {
-        QMessageBox::warning(this, tr("警告"), tr("请选择要删除的记录"));
-        return;
-    }
-
-    // 收集选中行的 ID（去重）
     QList<int> selectedIds;
-    for (QTableWidgetItem* item : selectedItems) {
-        int row = item->row();
-        QTableWidgetItem* idItem = ui->tableWidget->item(row, 0);  // 第0列是ID
-        if (idItem) {
-            const int id = idItem->text().toInt();
-            if (!selectedIds.contains(id)) {
-                selectedIds.append(id);
+    if (m_selectAllResults) {
+        selectedIds.reserve(m_currentResults.size());
+        for (const DB_WeldingResult& result : m_currentResults)
+            selectedIds.append(result.id);
+    } else {
+        // 普通多选只收集当前页选中行的 ID。
+        const QList<QTableWidgetItem*> selectedItems = ui->tableWidget->selectedItems();
+        for (QTableWidgetItem* item : selectedItems) {
+            QTableWidgetItem* idItem = ui->tableWidget->item(item->row(), 0);
+            if (idItem) {
+                const int id = idItem->text().toInt();
+                if (!selectedIds.contains(id))
+                    selectedIds.append(id);
             }
         }
     }
@@ -322,6 +330,8 @@ void DataForm::on_Bt_Delete_clicked()
         if (success) {
             QMessageBox::information(this, tr("成功"),
                 tr("成功删除 %1 条记录").arg(idList.size()));
+            m_selectAllResults = false;
+            ui->cb_SelectAllResults->setChecked(false);
             updateWeldingData();
             m_nCurID = -1;
             ui->Bt_Delete->setEnabled(false);
@@ -335,8 +345,45 @@ void DataForm::on_Bt_Delete_clicked()
 
 void DataForm::on_Bt_Query_clicked()
 {
+    m_selectAllResults = false;
+    ui->cb_SelectAllResults->setChecked(false);
     m_nCurPage = 1;
     updateWeldingData();
+}
+
+void DataForm::on_cb_SelectAllResults_toggled(bool checked)
+{
+    m_selectAllResults = checked && !m_currentResults.isEmpty();
+    if (m_selectAllResults)
+        ui->tableWidget->selectAll();
+    else
+        ui->tableWidget->clearSelection();
+    updateSelectionActions();
+}
+
+void DataForm::updateSelectionActions()
+{
+    if (m_selectAllResults &&
+        ui->tableWidget->selectionModel()->selectedRows().size() !=
+            ui->tableWidget->rowCount()) {
+        const QSignalBlocker blocker(ui->tableWidget->selectionModel());
+        ui->tableWidget->selectAll();
+    }
+
+    QList<int> selectedRows;
+    if (!m_selectAllResults) {
+        const QList<QTableWidgetItem*> selectedItems = ui->tableWidget->selectedItems();
+        for (QTableWidgetItem* item : selectedItems) {
+            if (!selectedRows.contains(item->row()))
+                selectedRows.append(item->row());
+        }
+    }
+
+    const int selectedCount = m_selectAllResults
+        ? m_currentResults.size() : selectedRows.size();
+    ui->Bt_Delete->setEnabled(selectedCount > 0);
+    ui->Bt_Delete->setText(selectedCount > 1
+        ? tr("删除(%1)").arg(selectedCount) : tr("删除"));
 }
 
 void DataForm::on_tableWidget_cellClicked(int row, int column)
@@ -354,19 +401,7 @@ void DataForm::on_tableWidget_cellClicked(int row, int column)
         }
     }
     int selectedRowCount = selectedRows.size();
-
-    if (selectedRowCount > 0) {
-        ui->Bt_Delete->setEnabled(true);
-        // 更新按钮文字显示选中数量
-        if (selectedRowCount == 1) {
-            ui->Bt_Delete->setText(tr("删除"));
-        } else {
-            ui->Bt_Delete->setText(tr("删除(%1)").arg(selectedRowCount));
-        }
-    } else {
-        ui->Bt_Delete->setEnabled(false);
-        ui->Bt_Delete->setText(tr("删除"));
-    }
+    updateSelectionActions();
 
     // 如果只选中一条，支持查看详情
     if (selectedRowCount == 1) {

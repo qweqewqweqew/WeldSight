@@ -35,6 +35,7 @@ private slots:
     void on_tableWidget_cellDoubleClicked(int row, int column);
     void on_Bt_Search_clicked();
     void on_Bt_Export_clicked();
+    void on_cb_SelectAllResults_toggled(bool checked);
 
 private:
     Ui::DataForm *ui;
@@ -49,10 +50,12 @@ private:
     bool m_bDB;
 
     QList<DB_WeldingResult> m_currentResults; // 当前查询结果
+    bool m_selectAllResults = false; // 是否选择当前查询结果中的全部分页记录
 
     SqliteUtil m_sql;
 private:
     void exportToCSV();
+    void updateSelectionActions();
 
 };
 
