@@ -209,7 +209,7 @@ bool analyzeSegments(cv::Mat& image,
     const double ratio = (pix2mmScaleX * pix2mmScaleY) /
                          (totalScale * totalScale);
     std::vector<Instance> segments;
-    segmenter.SegInfer(image, segments, confidence, 150);
+    segmenter.SegInfer(image, segments, confidence, 600);
     if (segments.empty()) return false;
 
     bool foundSolderMask = false;
@@ -404,7 +404,7 @@ void processWith640Input(int cameraId,
 
     std::vector<BBox> boxes;
     stepTimer.restart();
-    detector.Infer(detectionImage, boxes, confidence, 150);
+    detector.Infer(detectionImage, boxes, confidence, 600);
     result.t_infer = stepTimer.elapsed();
     result.inferTime = result.t_infer;
 
