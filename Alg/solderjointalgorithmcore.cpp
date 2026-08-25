@@ -340,7 +340,7 @@ bool analyzeSegments(cv::Mat& image,
         }
     }
 
-    return foundSolderMask;
+    return foundSolderMask && !result.HXrect.empty() && !solderMask.empty();
 }
 
 void processWith640Input(int cameraId,
@@ -492,6 +492,11 @@ void processWith640Input(int cameraId,
         }
     }
 
+    // 默认使用检测框尺寸；分割成功且产生焊锡轮廓时再用分割尺寸覆盖。
+    // 宽高阈值判断不能依赖分割成功，否则界面显示了越界的检测框尺寸仍可能判 OK。
+    float measuredWidth = solder.hx_weight;
+    float measuredHeight = solder.hx_height;
+
     // 对最终选中的引脚在 640 画布上计算一次梯形修正，
     // 随后将引脚中心与检测框映射回原图坐标（与交付版一致）
     if (hasPin) {
@@ -540,21 +545,17 @@ void processWith640Input(int cameraId,
         result.t_seg = stepTimer.elapsed();
 
         if (!analyzed) {
-            qWarning() << "Solder area segmentation failed, camera=" << cameraId + 1;
+            qWarning() << "Solder area segmentation failed, using detector dimensions, camera="
+                       << cameraId + 1
+                       << "width=" << measuredWidth
+                       << "height=" << measuredHeight;
         } else {
-            // 交付版语义：高/宽/面积 NG 只在分割成功时判定
-            float measuredHeight = solder.hx_height;
-            float measuredWidth = solder.hx_weight;
             if (!result.HXrect.empty()) {
                 measuredHeight = result.HXrect[0].height * pix2mmScaleY / cropScale;
                 measuredWidth = result.HXrect[0].width * pix2mmScaleX / cropScale;
                 result.hxResult[0].hx_height = measuredHeight;
                 result.hxResult[0].hx_weight = measuredWidth;
             }
-            if (measuredHeight < params.min_h || measuredHeight > params.max_h)
-                result.HX_NGReult |= kHxHeightError;
-            if (measuredWidth < params.min_w || measuredWidth > params.max_w)
-                result.HX_NGReult |= kHxWidthError;
             if (result.HX_Area != 0.0 &&
                 (result.HX_Area < params.min_area ||
                  result.HX_Area > params.max_area)) {
@@ -738,6 +739,13 @@ void processWith640Input(int cameraId,
             if (measuredSolder.TBtoHX_distance > params.max_TBDis)
                 result.HX_NGReult |= kPinDistanceError;
         }
+    }
+
+    if (hasSolder) {
+        if (measuredHeight < params.min_h || measuredHeight > params.max_h)
+            result.HX_NGReult |= kHxHeightError;
+        if (measuredWidth < params.min_w || measuredWidth > params.max_w)
+            result.HX_NGReult |= kHxWidthError;
     }
 
     if (!boxes.empty() && (!hasSolder || !hasPin))
