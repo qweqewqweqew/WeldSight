@@ -151,10 +151,27 @@ CONFIG(debug, debug|release) {
 
 win32 {
     VC3000_RUNTIME = $$PWD/VC3000HDLL/bin
-    QMAKE_POST_LINK += $$quote(cmd /c "if not exist $$shell_path($$DESTDIR) mkdir $$shell_path($$DESTDIR) & copy /Y $$shell_path($$VC3000_RUNTIME)\\VC3000HDLL.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
+    OPENCV_RUNTIME = $$PWD/lib3rd/opencv4.9/release
+    OPENVINO_RUNTIME = $$PWD/lib3rd/openvino_toolkit_2024/runtime/bin/intel64/Release
+    TBB_RUNTIME = $$PWD/lib3rd/tbb/bin
+    DAHUA_RUNTIME = $$PWD/DHua/Bin/x64
+
+    QMAKE_POST_LINK += $$quote(cmd /c "if not exist $$shell_path($$DESTDIR) mkdir $$shell_path($$DESTDIR) & copy /Y $$shell_path($$VC3000_RUNTIME)\\* $$shell_path($$DESTDIR)\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$PWD/lib3rd/ovdetector/release)\\OVDetector.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+    CONFIG(release, debug|release) {
+        QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$OPENCV_RUNTIME)\\opencv_world490.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
+        QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+        QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$OPENVINO_RUNTIME)\\*.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
+        QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+        QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$TBB_RUNTIME)\\tbb12.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
+        QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+        QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$DAHUA_RUNTIME)\\MVSDKmd.dll $$shell_path($$DESTDIR)\\ >nul 2>&1")
+        QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+        QMAKE_POST_LINK += $$quote($$shell_path($$[QT_INSTALL_BINS]/windeployqt.exe) --release --compiler-runtime --no-translations $$shell_path($$DESTDIR/$${TARGET}.exe))
+        QMAKE_POST_LINK += $$escape_expand(\\n\\t)
+    }
     QMAKE_POST_LINK += $$quote(cmd /c "if not exist $$shell_path($$DESTDIR)\\weights mkdir $$shell_path($$DESTDIR)\\weights & copy /Y $$shell_path($$PWD/weights)\\Bbox640.onnx $$shell_path($$DESTDIR)\\weights\\ >nul 2>&1")
     QMAKE_POST_LINK += $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$quote(cmd /c "copy /Y $$shell_path($$PWD/weights)\\YOLOV11S-Seg0805.onnx $$shell_path($$DESTDIR)\\weights\\ >nul 2>&1")
