@@ -29,15 +29,15 @@
 
 namespace {
 
-constexpr std::uint16_t kHxAreaError = 0x0100;
-constexpr std::uint16_t kHxWidthError = 0x0080;
-constexpr std::uint16_t kHxHeightError = 0x0040;
-constexpr std::uint16_t kPinError = 0x0020;
-constexpr std::uint16_t kPinDistanceError = 0x0010;
+constexpr std::uint16_t kHxAreaError = 0x0080;
+constexpr std::uint16_t kHxWidthError = 0x0040;
+constexpr std::uint16_t kHxHeightError = 0x0020;
+constexpr std::uint16_t kPinError = 0x0010;
 constexpr std::uint16_t kHxOffsetError = 0x0008;
-constexpr std::uint16_t kHxGapError = 0x0004;
+constexpr std::uint16_t kPinDistanceError = 0x0004;
 constexpr std::uint16_t kCopperError = 0x0002;
 constexpr std::uint16_t kBlackDotError = 0x0001;
+constexpr std::uint16_t kHxGapError = 0x0100;
 constexpr std::uint16_t kAllErrors = 0x01ff;
 
 DetectionRsult primaryResultFromMask(std::uint16_t mask)
@@ -48,8 +48,8 @@ DetectionRsult primaryResultFromMask(std::uint16_t mask)
     if (mask & kHxWidthError) return DetectionRsult::HXSIZE_W_Err;
     if (mask & kHxHeightError) return DetectionRsult::HXSIZE_H_Err;
     if (mask & kPinError) return DetectionRsult::YJ_Err;
-    if (mask & kPinDistanceError) return DetectionRsult::TBDIS_Err;
     if (mask & kHxOffsetError) return DetectionRsult::HXPY_Err;
+    if (mask & kPinDistanceError) return DetectionRsult::TBDIS_Err;
     if (mask & kHxGapError) return DetectionRsult::HXGAP_Err;
     if (mask & kCopperError) return DetectionRsult::LT_Err;
     if (mask & kBlackDotError) return DetectionRsult::HD_Err;

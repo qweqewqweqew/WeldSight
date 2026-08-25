@@ -346,12 +346,12 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
         QStringList errorTypes;
         QVector<int> errorColIndices;
         // 检查每个错误位
-        if (result.HX_NGReult & 0x0100) { // HXAREA_Err
+        if (result.HX_NGReult & 0b10000000) { // HXAREA_Err
             errorTypes << tr("%1(%2)").arg(tr("HXAREA_Err")).arg(result.HX_Area, 0, 'f', 2);
             errorColIndices << 3; // Area列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0080) { // HXSIZE_W_Err
+        if (result.HX_NGReult & 0b01000000) { // HXSIZE_W_Err
             if (!result.hxResult.empty()) {
                 errorTypes << tr("%1(%2)").arg(tr("HXSIZE_W_Err")).arg(result.hxResult[0].hx_weight, 0, 'f', 2);
             } else {
@@ -360,7 +360,7 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             errorColIndices << 1; // Weight列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0040) { // HXSIZE_H_Err
+        if (result.HX_NGReult & 0b00100000) { // HXSIZE_H_Err
             if (!result.hxResult.empty()) {
                 errorTypes << tr("%1(%2)").arg(tr("HXSIZE_H_Err")).arg(result.hxResult[0].hx_height, 0, 'f', 2);
             } else {
@@ -369,21 +369,12 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             errorColIndices << 2; // Height列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0020) { // YJ_Err
+        if (result.HX_NGReult & 0b00010000) { // YJ_Err
             errorTypes << tr("YJ_Err");
             errorColIndices << 10; // 结果列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0010) { // TBDIS_Err
-            if (!result.hxResult.empty()) {
-                errorTypes << tr("%1(%2)").arg(tr("TBDIS_Err")).arg(result.hxResult[0].TBtoHX_distance, 0, 'f', 2);
-            } else {
-                errorTypes << tr("TBDIS_Err");
-            }
-            errorColIndices << 4; // TBtoHX列
-            hasError = true;
-        }
-        if (result.HX_NGReult & 0x0008) { // HXPY_Err
+        if (result.HX_NGReult & 0b00001000) { // HXPY_Err
             if (!result.hxResult.empty()) {
                 errorTypes << tr("%1(%2)").arg(tr("HXPY_Err")).arg(result.hxResult[0].center_pianyi, 0, 'f', 2);
             } else {
@@ -392,19 +383,28 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             errorColIndices << 5; // Offset列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0004) { // HXGAP_Err
-            errorTypes << tr("%1(%2)").arg(tr("HXGAP_Err")).arg(result.HX_DiffArea, 0, 'f', 2);
-            errorColIndices << 10;
+        if (result.HX_NGReult & 0b00000100) { // TBDIS_Err
+            if (!result.hxResult.empty()) {
+                errorTypes << tr("%1(%2)").arg(tr("TBDIS_Err")).arg(result.hxResult[0].TBtoHX_distance, 0, 'f', 2);
+            } else {
+                errorTypes << tr("TBDIS_Err");
+            }
+            errorColIndices << 4; // TBtoHX列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0002) { // LT_Err
+        if (result.HX_NGReult & 0b00000010) { // LT_Err
             errorTypes << tr("%1(%2)").arg(tr("LT_Err")).arg(QString("%1/%2").arg(result.LT_SumArea, 0, 'f', 2).arg(result.LT_MaxArea, 0, 'f', 2));
             errorColIndices << 6; // LTsum列
             hasError = true;
         }
-        if (result.HX_NGReult & 0x0001) { // HD_Err
+        if (result.HX_NGReult & 0b00000001) { // HD_Err
             errorTypes << tr("%1(%2)").arg(tr("HD_Err")).arg(QString("%1/%2").arg(result.HD_SumArea, 0, 'f', 2).arg(result.HD_MaxArea, 0, 'f', 2));
             errorColIndices << 8; // HDsum列
+            hasError = true;
+        }
+        if (result.HX_NGReult & 0x0100) { // HXGAP_Err
+            errorTypes << tr("%1(%2)").arg(tr("HXGAP_Err")).arg(result.HX_DiffArea, 0, 'f', 2);
+            errorColIndices << 10;
             hasError = true;
         }
         if (result.NO_HX_NGReults == NG) {
@@ -435,7 +435,7 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             }
 
             // 如果包含面积错误，显示详细信息
-            if (result.HX_NGReult & 0x0100) {
+            if (result.HX_NGReult & 0b10000000) {
                 lines << tr("%1(%2)").arg(tr("LT_SUM")).arg(QString("%1/%2").arg(result.LT_SumArea, 0, 'f', 2).arg(result.LT_MaxArea, 0, 'f', 2));
                 styles.push_back(LineStyle{30, Qt::red, "Consolas"});
                 lines << tr("%1(%2)").arg(tr("HD_SUM")).arg(QString("%1/%2").arg(result.HD_SumArea, 0, 'f', 2).arg(result.HD_MaxArea, 0, 'f', 2));
