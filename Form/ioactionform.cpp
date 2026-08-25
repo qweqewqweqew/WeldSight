@@ -6,11 +6,30 @@
 #include <QSettings>
 #include <QTextCodec>
 #include <QDateTime>
+#include <QLibrary>
 #include <QMetaObject>
 #include <QThread>
 #include <QtConcurrent/QtConcurrentRun>
 #include "MZ_VC3000H.h"
 #include <Common/SysEnv.h>
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
+
+namespace {
+bool isRunningAsAdministrator()
+{
+#ifdef Q_OS_WIN
+    QLibrary shell32(QStringLiteral("shell32"));
+    using IsUserAnAdminFunction = BOOL (WINAPI*)();
+    const auto isUserAnAdmin = reinterpret_cast<IsUserAnAdminFunction>(
+        shell32.resolve("IsUserAnAdmin"));
+    return isUserAnAdmin && isUserAnAdmin() != FALSE;
+#else
+    return true;
+#endif
+}
+}
 
 ioActionForm::ioActionForm(QWidget *parent) :
     QWidget(parent),
@@ -78,7 +97,7 @@ ioActionForm::ioActionForm(QWidget *parent) :
         m_diPollTimer->start(10);
     } else {
         SysEnv::instance().setModuleBad(SysEnv::PLC);
-        ui->textEdit->append("PLC初始化失败，请检查连接");
+        ui->textEdit->append("PLC未连接，主程序已进入离线模式");
     }
 }
 
@@ -189,6 +208,12 @@ void ioActionForm::populateCOMPorts()
 
 bool ioActionForm::initPLC()
 {
+    if (!isRunningAsAdministrator()) {
+        qWarning() << "PLC initialization skipped: WinIO requires administrator privileges.";
+        ui->textEdit->append("PLC未初始化：WinIO需要管理员权限；如需使用PLC，请以管理员身份运行程序");
+        return false;
+    }
+
     QMutexLocker locker(&m_plcMutex);
 
     // 初始化VC3000H系统

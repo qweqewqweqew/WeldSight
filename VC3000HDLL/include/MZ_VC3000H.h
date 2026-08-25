@@ -3,6 +3,9 @@
 #include <QLibrary>
 #include <QCoreApplication>
 #include <QDebug>
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 
 namespace PCI
 {
@@ -14,6 +17,7 @@ namespace PCI
 
         bool loadDll()
         {
+            if (m_faulted) return false;
             if (m_loaded) return true;
 
             QString path = QCoreApplication::applicationDirPath() + "/VC3000HDLL";
@@ -52,7 +56,21 @@ namespace PCI
         int InitialSystem()
         {
             if (!ensureLoaded()) return -1;
+
+#ifdef _MSC_VER
+            unsigned long exceptionCode = 0;
+            const int result = invokeSimpleSafely(m_fnInitialSystem, m_obj, &exceptionCode);
+            if (exceptionCode != 0) {
+                m_faulted = true;
+                qCritical().nospace()
+                    << "VC3000HDLL: InitialSystem raised Windows exception 0x"
+                    << Qt::hex << exceptionCode;
+                return -1;
+            }
+            return result;
+#else
             return m_fnInitialSystem(m_obj);
+#endif
         }
 
         int SaveParam()
@@ -102,8 +120,12 @@ namespace PCI
         void Destroy()
         {
             if (m_loaded && m_obj) {
-                if (m_fnDestroy) m_fnDestroy(m_obj);
-                if (m_fnDtor) m_fnDtor(m_obj);
+                // A vendor exception can leave its object in an unknown state.
+                // Do not call back into the DLL after that point.
+                if (!m_faulted) {
+                    if (m_fnDestroy) m_fnDestroy(m_obj);
+                    if (m_fnDtor) m_fnDtor(m_obj);
+                }
                 delete[] reinterpret_cast<char*>(m_obj);
                 m_obj = nullptr;
             }
@@ -116,9 +138,22 @@ namespace PCI
     private:
         bool ensureLoaded()
         {
+            if (m_faulted) return false;
             if (m_loaded) return true;
             return loadDll();
         }
+
+#ifdef _MSC_VER
+        static int invokeSimpleSafely(int (*function)(void*), void* object,
+                                      unsigned long* exceptionCode)
+        {
+            __try {
+                return function(object);
+            } __except ((*exceptionCode = GetExceptionCode(), EXCEPTION_EXECUTE_HANDLER)) {
+                return -1;
+            }
+        }
+#endif
 
         template<typename T>
         T resolve(const char* symbol)
@@ -130,6 +165,7 @@ namespace PCI
 
         QLibrary m_lib;
         bool m_loaded = false;
+        bool m_faulted = false;
         void* m_obj = nullptr;
 
         using Fn_Ctor          = void  (*)(void*);
