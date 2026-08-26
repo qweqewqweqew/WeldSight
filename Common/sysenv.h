@@ -14,6 +14,7 @@
 const QString DEFAULT_SERVER_IP = "127.0.0.1";
 const int DEFAULT_SERVER_PORT = 502;
 const QString DEFAULT_THEME = "Light";
+const double DEFAULT_ROTATED_IMAGE_SCALE = 0.8;
 const QString DEFAULT_PRODUCT_MODE = "U07";
 const QString DEFAULT_IMAGE_SAVE_PATH = ""; // 空字符串表示使用默认路径
 const int DEFAULT_IMAGE_SAVE_DAYS = 7;    // 新增：默认保存7天
@@ -30,6 +31,7 @@ struct Persistent {
     QString serverIP   = DEFAULT_SERVER_IP;
     int     serverPort = DEFAULT_SERVER_PORT;
     QString theme      = DEFAULT_THEME;
+    double  rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
     QString productMode   = DEFAULT_PRODUCT_MODE;
     QString imageSavePath = DEFAULT_IMAGE_SAVE_PATH; // 新增：图像保存路径
     int     imageSaveDays = DEFAULT_IMAGE_SAVE_DAYS; // 新增：图像保存天数
@@ -108,6 +110,7 @@ public:
     int productPEnd() const;
     int productTotalPoints() const;
     bool productUsesSpecialRotation() const;
+    double getRotatedImageScale() const;
     static QString normalizeProductMode(const QString& mode);
     static QStringList productModes();
     void publishWeldPointResetMessage(const QString& message, bool warning);

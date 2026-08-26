@@ -73,6 +73,11 @@ void SysEnv::load()
     m_cfg.serverIP   = m_ini->value("Net/ServerIP", DEFAULT_SERVER_IP).toString();
     m_cfg.serverPort = m_ini->value("Net/ServerPort", DEFAULT_SERVER_PORT).toInt();
     m_cfg.theme      = m_ini->value("UI/Theme", DEFAULT_THEME).toString();
+    m_cfg.rotatedImageScale = m_ini->value(
+        "UI/RotatedImageScale", DEFAULT_ROTATED_IMAGE_SCALE).toDouble();
+    if (m_cfg.rotatedImageScale < 0.1 || m_cfg.rotatedImageScale > 1.0) {
+        m_cfg.rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
+    }
     m_cfg.productMode = normalizeProductMode(
         m_ini->value("Product/Mode", DEFAULT_PRODUCT_MODE).toString());
     m_cfg.imageSavePath = m_ini->value("Save/ImagePath", DEFAULT_IMAGE_SAVE_PATH).toString();
@@ -97,6 +102,7 @@ void SysEnv::load()
         m_cfg.serverIP = DEFAULT_SERVER_IP;
         m_cfg.serverPort = DEFAULT_SERVER_PORT;
         m_cfg.theme = DEFAULT_THEME;
+        m_cfg.rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
         m_cfg.productMode = DEFAULT_PRODUCT_MODE;
         m_cfg.imageSavePath = DEFAULT_IMAGE_SAVE_PATH;
         m_cfg.imageSaveDays = DEFAULT_IMAGE_SAVE_DAYS;
@@ -125,6 +131,7 @@ void SysEnv::save()
     m_ini->setValue("Net/ServerIP", m_cfg.serverIP);
     m_ini->setValue("Net/ServerPort", m_cfg.serverPort);
     m_ini->setValue("UI/Theme", m_cfg.theme);
+    m_ini->setValue("UI/RotatedImageScale", m_cfg.rotatedImageScale);
     m_ini->setValue("Product/Mode", m_cfg.productMode);
     m_ini->setValue("Save/ImagePath", m_cfg.imageSavePath);
     m_ini->setValue("Save/ImageSaveDays", m_cfg.imageSaveDays);
@@ -323,6 +330,11 @@ int SysEnv::productTotalPoints() const
 bool SysEnv::productUsesSpecialRotation() const
 {
     return m_cfg.productMode == QStringLiteral("E16");
+}
+
+double SysEnv::getRotatedImageScale() const
+{
+    return m_cfg.rotatedImageScale;
 }
 
 void SysEnv::publishWeldPointResetMessage(const QString& message, bool warning)

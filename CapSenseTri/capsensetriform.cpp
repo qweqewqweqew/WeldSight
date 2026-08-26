@@ -457,10 +457,12 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
                                               textOrigin, lineSpacing);
 
         // 界面显示：保持原始宽高比缩放，避免特殊旋转焊点被交换宽高后拉伸变形。
-        // 特殊横版图的显示尺寸缩小 1/5，普通图仍保持长边 640。
+        // 特殊横版图使用全局配置的显示比例，普通图仍保持长边 640。
         cv::Mat displaySrc = result.dst;
         const bool isRotatedLandscape = displaySrc.cols > displaySrc.rows;
-        const double targetLongSide = isRotatedLandscape ? 640.0 * 0.8 : 640.0;
+        const double targetLongSide = isRotatedLandscape
+            ? 640.0 * SysEnv::instance().getRotatedImageScale()
+            : 640.0;
         const double displayScale =
             targetLongSide / (std::max)(displaySrc.cols, displaySrc.rows);
         cv::Mat displayMat;
