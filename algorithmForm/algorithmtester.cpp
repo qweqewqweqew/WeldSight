@@ -23,6 +23,27 @@
 #include <Common/cvqt_text.hpp>
 #include "npbatchdialog.h"
 
+namespace {
+
+// 结果图文字按分辨率相对 960 基准缩放，保证大图缩放到界面后文字清晰
+float resultTextScale(const cv::Mat& image)
+{
+    if (image.empty()) return 1.0f;
+    const float scale = (std::max)(static_cast<float>(image.cols) / 960.0f,
+                                   static_cast<float>(image.rows) / 720.0f);
+    return (std::max)(1.0f, scale);
+}
+
+std::vector<LineStyle> scaleLineStyles(const std::vector<LineStyle>& styles, float scale)
+{
+    std::vector<LineStyle> scaled = styles;
+    for (LineStyle& style : scaled)
+        style.fontSize = (std::max)(1, static_cast<int>(style.fontSize * scale + 0.5f));
+    return scaled;
+}
+
+}
+
 AlgorithmTester::AlgorithmTester(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::AlgorithmTester)
@@ -600,7 +621,13 @@ void AlgorithmTester::onAlgorithmFinished(const WeldingResult &result)
     lines << QString(tr("elapsed:%1ms")).arg(ms);
     styles.push_back(LineStyle{30, Qt::green, "Consolas", QFont::Bold});
 
-    QPixmap pix = cvqt::drawText(result.dst, lines, styles, cv::Point(30, 50));
+    // 按图像分辨率放大字号、起点和行距，保证大图显示时文字清晰
+    const float textScale = resultTextScale(result.dst);
+    const std::vector<LineStyle> scaledStyles = scaleLineStyles(styles, textScale);
+    const cv::Point textOrigin(static_cast<int>(30 * textScale + 0.5f),
+                               static_cast<int>(50 * textScale + 0.5f));
+    const int lineSpacing = static_cast<int>(10 * textScale + 0.5f);
+    QPixmap pix = cvqt::drawText(result.dst, lines, scaledStyles, textOrigin, lineSpacing);
     ui->labelResult->setPixmap(pix);
 
     ui->labelFusion->setPixmap(
