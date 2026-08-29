@@ -81,7 +81,7 @@ void SysEnv::load()
     m_cfg.productMode = normalizeProductMode(
         m_ini->value("Product/Mode", DEFAULT_PRODUCT_MODE).toString());
     m_cfg.imageSavePath = m_ini->value("Save/ImagePath", DEFAULT_IMAGE_SAVE_PATH).toString();
-    m_cfg.imageSaveDays = m_ini->value("Save/ImageSaveDays", DEFAULT_IMAGE_SAVE_DAYS).toInt();
+    m_ini->remove("Save/ImageSaveDays");
     m_cfg.autoStart     = m_ini->value("AutoStart/Enabled", DEFAULT_AUTO_START).toBool();
     m_cfg.classifyStr.clear();
     m_cfg.fixtureCode.clear();
@@ -105,7 +105,6 @@ void SysEnv::load()
         m_cfg.rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
         m_cfg.productMode = DEFAULT_PRODUCT_MODE;
         m_cfg.imageSavePath = DEFAULT_IMAGE_SAVE_PATH;
-        m_cfg.imageSaveDays = DEFAULT_IMAGE_SAVE_DAYS;
         m_cfg.autoStart = DEFAULT_AUTO_START;
 
         // 重置相机设置
@@ -134,7 +133,7 @@ void SysEnv::save()
     m_ini->setValue("UI/RotatedImageScale", m_cfg.rotatedImageScale);
     m_ini->setValue("Product/Mode", m_cfg.productMode);
     m_ini->setValue("Save/ImagePath", m_cfg.imageSavePath);
-    m_ini->setValue("Save/ImageSaveDays", m_cfg.imageSaveDays);
+    m_ini->remove("Save/ImageSaveDays");
     m_ini->setValue("AutoStart/Enabled", m_cfg.autoStart);
     m_ini->remove("Data/ClassifyStr");
 
@@ -197,23 +196,6 @@ void SysEnv::setImageSavePath(const QString &path)
     }
 
     m_cfg.imageSavePath = path;
-    save();
-}
-
-// 新增：获取图像保存天数
-int SysEnv::getImageSaveDays() const
-{
-    return m_cfg.imageSaveDays;
-}
-
-// 新增：设置图像保存天数
-void SysEnv::setImageSaveDays(int days)
-{
-    if (m_cfg.imageSaveDays == days) {
-        return;
-    }
-
-    m_cfg.imageSaveDays = days;
     save();
 }
 
@@ -327,6 +309,17 @@ int SysEnv::productTotalPoints() const
     return productNEnd() + (productPStart() - productPEnd() + 1);
 }
 
+bool SysEnv::productCameraIsNEnd(int cameraId) const
+{
+    if (cameraId != 0 && cameraId != 1) {
+        return false;
+    }
+
+    // 仕样书：Z19 相机1为 N 端；E16/U07 相机1为 P 端。
+    const bool z19Mode = m_cfg.productMode == QStringLiteral("Z19");
+    return z19Mode ? cameraId == 0 : cameraId == 1;
+}
+
 bool SysEnv::productUsesSpecialRotation() const
 {
     return m_cfg.productMode == QStringLiteral("E16");
@@ -383,11 +376,6 @@ bool SysEnv::isConfigValid() const
     // 验证主题
     if (m_cfg.theme.isEmpty() ||
         (m_cfg.theme != "Light" && m_cfg.theme != "Dark")) {
-        return false;
-    }
-
-    // 验证图像保存天数范围
-    if (m_cfg.imageSaveDays < 1 || m_cfg.imageSaveDays > 3650) {
         return false;
     }
 

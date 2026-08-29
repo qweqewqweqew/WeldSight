@@ -17,7 +17,6 @@ const QString DEFAULT_THEME = "Light";
 const double DEFAULT_ROTATED_IMAGE_SCALE = 0.8;
 const QString DEFAULT_PRODUCT_MODE = "U07";
 const QString DEFAULT_IMAGE_SAVE_PATH = ""; // 空字符串表示使用默认路径
-const int DEFAULT_IMAGE_SAVE_DAYS = 7;    // 新增：默认保存7天
 const bool DEFAULT_AUTO_START = false;  // 新增：默认不自启动
 
 /* ---------- 仅运行时 ---------- */
@@ -34,7 +33,6 @@ struct Persistent {
     double  rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
     QString productMode   = DEFAULT_PRODUCT_MODE;
     QString imageSavePath = DEFAULT_IMAGE_SAVE_PATH; // 新增：图像保存路径
-    int     imageSaveDays = DEFAULT_IMAGE_SAVE_DAYS; // 新增：图像保存天数
     bool    autoStart     = DEFAULT_AUTO_START;  // 新增：自启动开关
 
     // 新增：相机保存设置数组（对应6个相机）
@@ -73,10 +71,6 @@ public:
     QString getImageSavePath() const;
     void setImageSavePath(const QString& path);
 
-    /* 图像保存天数管理 */  // 新增
-    int getImageSaveDays() const;
-    void setImageSaveDays(int days);
-
     /* 模块状态管理 */
     void setModuleOk(quint8 bit)  { setBit(bit, false); }
     void setModuleBad(quint8 bit) { setBit(bit, true);  }
@@ -109,6 +103,7 @@ public:
     int productPStart() const;
     int productPEnd() const;
     int productTotalPoints() const;
+    bool productCameraIsNEnd(int cameraId) const;
     bool productUsesSpecialRotation() const;
     double getRotatedImageScale() const;
     static QString normalizeProductMode(const QString& mode);

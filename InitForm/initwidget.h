@@ -106,15 +106,5 @@ private:
     void updateProductModeLabel(const QString& mode);
     void refreshModuleStatusText();
 
-private:
-    // 添加定时器用于定期清理
-    QTimer *m_cleanupTimer = nullptr;
-    void cleanupDirectoryRecursive(const QString &directoryPath, const QDateTime &cutoffTime,
-                                   int &deletedCount, int &errorCount);
-    void scheduleDailyCleanup(); // 安排每日清理
-    bool isFileExpired(const QString &fileName, const QDateTime &cutoffTime);
-private slots:
-    void cleanupExpiredImages();
-
 };
 #endif // INITWIDGET_H

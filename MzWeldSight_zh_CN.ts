@@ -936,11 +936,6 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="Form/dataform.ui" line="129"/>
-        <source>只保存7天数据，当插入新数据的时候，会自动清理过期数据</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="Form/dataform.ui" line="142"/>
         <source>查询</source>
         <translation></translation>
@@ -1464,22 +1459,6 @@
     <message>
         <location filename="Form/saveform.ui" line="156"/>
         <source>确认</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="Form/saveform.ui" line="168"/>
-        <source>图像保存天数</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="Form/saveform.ui" line="174"/>
-        <source>保存天数:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="Form/saveform.ui" line="181"/>
-        <location filename="Form/saveform.cpp" line="105"/>
-        <source> 天</source>
         <translation></translation>
     </message>
     <message>

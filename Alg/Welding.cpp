@@ -97,10 +97,12 @@ int nextWeldPointNo(int cameraId, quint64 inspectionGeneration)
 
     int weldPoint = 0;
     const SysEnv& env = SysEnv::instance();
-    if (cameraId == 0 && g_nWeldPointNo <= env.productNEnd()) {
+    if (env.productCameraIsNEnd(cameraId) && g_nWeldPointNo <= env.productNEnd()) {
         weldPoint = g_nWeldPointNo++;
         g_lastNWeldPointNo = weldPoint;
-    } else if (cameraId == 1 && g_pWeldPointNo >= env.productPEnd()) {
+    } else if (!env.productCameraIsNEnd(cameraId) &&
+               (cameraId == 0 || cameraId == 1) &&
+               g_pWeldPointNo >= env.productPEnd()) {
         weldPoint = g_pWeldPointNo--;
         g_lastPWeldPointNo = weldPoint;
     } else {
@@ -149,15 +151,15 @@ bool isWeldPointCycleComplete()
     return g_weldPointCycleComplete;
 }
 
-void rotateByExplicitWeldPoint(cv::Mat& image, int cameraId, int weldPoint)
+void rotateByExplicitWeldPoint(cv::Mat& image, int weldPoint)
 {
     if (image.empty() || weldPoint <= 0) return;
     if (!SysEnv::instance().productUsesSpecialRotation()) return;
 
-    if ((cameraId == 0 && weldPoint == 1) ||
-        (cameraId == 1 && weldPoint == 19)) {
+    // 旋转跟随焊点序号，不跟随该序号当前所在的相机。
+    if (weldPoint == 1 || weldPoint == 19) {
         cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
-    } else if (cameraId == 1 && weldPoint == 18) {
+    } else if (weldPoint == 18) {
         cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
     }
 }
@@ -437,7 +439,7 @@ void WeldingDetector::SetIuputImages(std::vector<cv::Mat>& image, int id,
             qWarning() << "Inspection ignored until the next inspection cycle, camera=" << id + 1;
             return;
         }
-        rotateByExplicitWeldPoint(src, id, weldPoint);
+        rotateByExplicitWeldPoint(src, weldPoint);
         // 使用 m_queueMtx 保护队列操作，防止并发写入导致数据竞争
         {
             std::lock_guard<std::mutex> lock(m_queueMtx);
@@ -468,7 +470,7 @@ void WeldingDetector::SetIuputImagesForWeldPoint(std::vector<cv::Mat>& image, in
     if (src.empty()) {
         src = MergeMultiLightImages(image);
     }
-    rotateByExplicitWeldPoint(src, id, weldPoint);
+    rotateByExplicitWeldPoint(src, weldPoint);
 
     std::lock_guard<std::mutex> lock(m_queueMtx);
     WeldingInputTask task;
@@ -482,7 +484,7 @@ void WeldingDetector::SetIuputImagessignalForWeldPoint(cv::Mat& image, int id, i
     if (image.empty()) return;
 
     cv::Mat src = image.clone();
-    rotateByExplicitWeldPoint(src, id, weldPoint);
+    rotateByExplicitWeldPoint(src, weldPoint);
     std::lock_guard<std::mutex> lock(m_queueMtx);
     WeldingInputTask task;
     task.image = src;

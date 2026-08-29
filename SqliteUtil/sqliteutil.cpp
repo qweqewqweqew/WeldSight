@@ -52,6 +52,7 @@ void SqliteUtil::init(QString db)
     {
         QSqlDatabase db = QSqlDatabase::database(m_DB);
         QSqlQuery q(db);
+        q.exec("DROP TRIGGER IF EXISTS auto_clean_welding_results");
         q.exec("ALTER TABLE welding_results ADD COLUMN classifyStr TEXT DEFAULT ''");
         q.exec("ALTER TABLE welding_results ADD COLUMN fixtureCode TEXT DEFAULT ''");
         q.exec("ALTER TABLE welding_results ADD COLUMN shellCode TEXT DEFAULT ''");

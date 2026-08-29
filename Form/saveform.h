@@ -19,7 +19,6 @@ public:
     void openFolder();
     void initCheckBoxes();
     void updateCurrentPathDisplay();  //更新路径显示
-    void updateSaveDaysDisplay();     // 新增：更新保存天数显示
 
     // 新增：加载保存设置
     void loadSaveSettings();
@@ -33,14 +32,12 @@ public:
 signals:
     void sigSaveStateChanged();
     void sigSavePathChanged(const QString &newPath);  //保存路径更改信号
-    void sigSaveDaysChanged(int days);                // 新增：保存天数更改信号
 
 private slots:
     void on_Bt_confirm_clicked();
     void on_Bt_look_clicked();
     void onCheckBoxStateChanged(int);
     void on_Bt_changePath_clicked();
-    void on_saveDaysSpinBox_valueChanged(int days);   // 新增：保存天数变化槽函数
 
 public:
     SaveSw m_saveSw;

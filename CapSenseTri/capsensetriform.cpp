@@ -60,9 +60,15 @@ QString makeResultImageName(int triggerId, int cameraId, DetectionRsult result)
         .arg(resultSuffix(result));
 }
 
+int initialDisplayWeldPointIndex(int cameraId)
+{
+    const SysEnv& env = SysEnv::instance();
+    return env.productCameraIsNEnd(cameraId) ? 1 : env.productPStart();
+}
+
 QVector<int> initialDisplayWeldPointIndexes()
 {
-    return {1, SysEnv::instance().productPStart()};
+    return {initialDisplayWeldPointIndex(0), initialDisplayWeldPointIndex(1)};
 }
 
 int displayRowsPerSide()
@@ -527,7 +533,7 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             face.setRowTextColor(result.id, currentRowIndex, Qt::green);
         }
 
-        if (result.id == 0) {
+        if (SysEnv::instance().productCameraIsNEnd(result.id)) {
             m_hxIndex[result.id]++;
         } else {
             m_hxIndex[result.id]--;
@@ -535,9 +541,7 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
 
         if (m_resultData[result.id].size() >= displayRowsPerSide()) {
             m_resultData[result.id].clear();
-            m_hxIndex[result.id] = (result.id == 0)
-                ? 1
-                : SysEnv::instance().productPStart();
+            m_hxIndex[result.id] = initialDisplayWeldPointIndex(result.id);
         }
 
         // 保存合成图像
@@ -608,7 +612,8 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
             qDebug() << "[T6] DB start";
 
             DB_WeldingResult dbResult;
-            dbResult.hxPort = (cameraId == 1)? "N端":"P端";                    // 相机端口
+            dbResult.hxPort = SysEnv::instance().productCameraIsNEnd(result.id)
+                ? "N端" : "P端";                         // 相机端口
             dbResult.hxId = displayIdx;                       // 焊锡编号
             dbResult.hxBatch = 1;                          // 批次，没有的话记为1
             dbResult.hxWeight = hx.hx_weight;              // 焊锡长

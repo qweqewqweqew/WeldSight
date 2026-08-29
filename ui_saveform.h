@@ -17,8 +17,6 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -48,11 +46,6 @@ public:
     QPushButton *Bt_changePath;
     QPushButton *Bt_look;
     QPushButton *Bt_confirm;
-    QGroupBox *groupBox;
-    QHBoxLayout *horizontalLayout_2;
-    QLabel *label_saveDaysHint;
-    QSpinBox *saveDaysSpinBox;
-    QSpacerItem *horizontalSpacer;
 
     void setupUi(QWidget *SaveForm)
     {
@@ -168,30 +161,6 @@ public:
 
         gridLayout_7->addWidget(gBox_path, 2, 0, 1, 2);
 
-        groupBox = new QGroupBox(SaveForm);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        horizontalLayout_2 = new QHBoxLayout(groupBox);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
-        label_saveDaysHint = new QLabel(groupBox);
-        label_saveDaysHint->setObjectName(QString::fromUtf8("label_saveDaysHint"));
-
-        horizontalLayout_2->addWidget(label_saveDaysHint);
-
-        saveDaysSpinBox = new QSpinBox(groupBox);
-        saveDaysSpinBox->setObjectName(QString::fromUtf8("saveDaysSpinBox"));
-        saveDaysSpinBox->setMinimum(1);
-        saveDaysSpinBox->setMaximum(3650);
-        saveDaysSpinBox->setValue(30);
-
-        horizontalLayout_2->addWidget(saveDaysSpinBox);
-
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        horizontalLayout_2->addItem(horizontalSpacer);
-
-
-        gridLayout_7->addWidget(groupBox, 1, 0, 1, 2);
-
         gridLayout_7->setRowStretch(0, 3);
         gridLayout_7->setRowStretch(1, 1);
         gridLayout_7->setRowStretch(2, 2);
@@ -220,9 +189,6 @@ public:
         Bt_changePath->setText(QCoreApplication::translate("SaveForm", "\346\233\264\346\224\271\350\267\257\345\276\204", nullptr));
         Bt_look->setText(QCoreApplication::translate("SaveForm", "\346\237\245\347\234\213\346\226\207\344\273\266\345\244\271", nullptr));
         Bt_confirm->setText(QCoreApplication::translate("SaveForm", "\347\241\256\350\256\244", nullptr));
-        groupBox->setTitle(QCoreApplication::translate("SaveForm", "\345\233\276\345\203\217\344\277\235\345\255\230\345\244\251\346\225\260", nullptr));
-        label_saveDaysHint->setText(QCoreApplication::translate("SaveForm", "\344\277\235\345\255\230\345\244\251\346\225\260:", nullptr));
-        saveDaysSpinBox->setSuffix(QCoreApplication::translate("SaveForm", " \345\244\251", nullptr));
     } // retranslateUi
 
 };

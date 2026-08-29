@@ -38,7 +38,6 @@ public:
     QHBoxLayout *horizontalLayout_2;
     QLabel *label_end;
     QDateEdit *dateEnd;
-    QLabel *label;
     QPushButton *Bt_Query;
     QSpacerItem *horizontalSpacer_5;
     QGroupBox *Data_gBox_2;
@@ -126,17 +125,11 @@ public:
 
         gridLayout_4->addLayout(horizontalLayout_2, 0, 1, 1, 1);
 
-        label = new QLabel(Data_gBox_1);
-        label->setObjectName(QString::fromUtf8("label"));
-        label->setStyleSheet(QString::fromUtf8("color: rgb(255, 0, 0);"));
-
-        gridLayout_4->addWidget(label, 0, 3, 1, 1);
-
         Bt_Query = new QPushButton(Data_gBox_1);
         Bt_Query->setObjectName(QString::fromUtf8("Bt_Query"));
         Bt_Query->setMinimumSize(QSize(80, 30));
 
-        gridLayout_4->addWidget(Bt_Query, 0, 5, 1, 1);
+        gridLayout_4->addWidget(Bt_Query, 0, 3, 1, 1);
 
         horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -355,7 +348,6 @@ public:
         Data_gBox_1->setTitle(QString());
         label_start->setText(QCoreApplication::translate("DataForm", "\345\274\200\345\247\213\346\227\266\351\227\264", nullptr));
         label_end->setText(QCoreApplication::translate("DataForm", "\347\273\223\346\235\237\346\227\266\351\227\264", nullptr));
-        label->setText(QCoreApplication::translate("DataForm", "\345\217\252\344\277\235\345\255\2307\345\244\251\346\225\260\346\215\256\357\274\214\345\275\223\346\217\222\345\205\245\346\226\260\346\225\260\346\215\256\347\232\204\346\227\266\345\200\231\357\274\214\344\274\232\350\207\252\345\212\250\346\270\205\347\220\206\350\277\207\346\234\237\346\225\260\346\215\256", nullptr));
         Bt_Query->setText(QCoreApplication::translate("DataForm", "\346\237\245\350\257\242", nullptr));
         Data_gBox_2->setTitle(QString());
         groupBox->setTitle(QString());

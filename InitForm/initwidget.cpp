@@ -70,16 +70,8 @@ InitWidget::InitWidget(QWidget *parent)
     connect(m_timer, SIGNAL(timeout()), this, SLOT(updateTime()));
     m_timer->start(1000);
 
-    // 添加清理定时器
-    m_cleanupTimer = new QTimer(this);
-    connect(m_cleanupTimer, &QTimer::timeout, this, &InitWidget::cleanupExpiredImages);
-
     windowMax();
     Alg::WeldingAlgorithmManager::instance().initialize();
-
-    // 程序启动时执行一次清理，并安排每日清理
-    cleanupExpiredImages();
-    scheduleDailyCleanup();
 
     startScannerListening();
 }
@@ -92,9 +84,6 @@ InitWidget::~InitWidget()
     // 停止所有定时器
     if (m_timer) {
         m_timer->stop();
-    }
-    if (m_cleanupTimer) {
-        m_cleanupTimer->stop();
     }
     if (m_scannerHook) {
         disconnect(m_scannerHook, nullptr, this, nullptr);
@@ -579,132 +568,4 @@ void InitWidget::switchLanguage(const QString &lang)
 
 void InitWidget::retranslateMenuBar()
 {
-}
-
-// 添加清理函数实现
-void InitWidget::cleanupExpiredImages()
-{
-    QString imageSavePath = SysEnv::instance().getImageSavePath();
-    int saveDays = SysEnv::instance().getImageSaveDays();
-
-    if (imageSavePath.isEmpty() || saveDays <= 0) {
-        qDebug() << "Invalid save path or save days, skip cleanup";
-        scheduleDailyCleanup();
-        return;
-    }
-
-    QDir saveDir(imageSavePath);
-    if (!saveDir.exists()) {
-        qDebug() << "Save directory does not exist, skip cleanup:" << imageSavePath;
-        scheduleDailyCleanup();
-        return;
-    }
-
-    QDateTime cutoffTime = QDateTime::currentDateTime().addDays(-saveDays);
-    qDebug() << "Starting image cleanup. Cutoff time:" << cutoffTime.toString("yyyyMMdd")
-             << "Save days:" << saveDays;
-
-    int deletedCount = 0;
-    int errorCount = 0;
-
-    // 递归清理所有子目录中的过期文件
-    cleanupDirectoryRecursive(imageSavePath, cutoffTime, deletedCount, errorCount);
-
-    qDebug() << "Image cleanup completed. Deleted:" << deletedCount
-             << "files, Errors:" << errorCount;
-
-    // 清理完成后重新安排下一次清理
-    scheduleDailyCleanup();
-}
-
-void InitWidget::cleanupDirectoryRecursive(const QString &directoryPath, const QDateTime &cutoffTime,
-                                           int &deletedCount, int &errorCount)
-{
-    QDir dir(directoryPath);
-    if (!dir.exists()) {
-        return;
-    }
-
-    // 获取目录中的所有条目
-    QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
-
-    foreach (const QFileInfo &entry, entries) {
-        if (entry.isDir()) {
-            // 递归处理子目录
-            cleanupDirectoryRecursive(entry.absoluteFilePath(), cutoffTime, deletedCount, errorCount);
-
-            // 检查目录是否为空，如果为空则删除
-            // QDir subDir(entry.absoluteFilePath());
-            // if (subDir.isEmpty()) {
-            //     if (subDir.rmdir(entry.absoluteFilePath())) {
-            //         qDebug() << "Removed empty directory:" << entry.absoluteFilePath();
-            //     }
-            // }
-        } else if (entry.isFile()) {
-            // 从文件名中提取时间信息来判断是否过期
-            if (isFileExpired(entry.absoluteFilePath(), cutoffTime)) {
-                if (QFile::remove(entry.absoluteFilePath())) {
-                    deletedCount++;
-                    qDebug() << "Deleted expired file:" << entry.fileName();
-                } else {
-                    errorCount++;
-                    qWarning() << "Failed to delete file:" << entry.absoluteFilePath();
-                }
-            }
-        }
-    }
-}
-
-bool InitWidget::isFileExpired(const QString &filePath, const QDateTime &cutoffTime)
-{
-    const QFileInfo fileInfo(filePath);
-    const QString fileName = fileInfo.fileName();
-    // 根据 CameraSaverWorker 中的命名规则解析文件名
-    // 文件名格式: yyyyMMdd_HHmmss_zzz_Txxx_Cxx_type.jpg
-    // 例如: 20240115_143045_123_T001_C01_composite.jpg
-
-    QRegularExpression timePattern(R"(^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})_\d+_)");
-    QRegularExpressionMatch match = timePattern.match(fileName);
-
-    if (match.hasMatch()) {
-        // 从文件名中提取日期时间
-        int year = match.captured(1).toInt();
-        int month = match.captured(2).toInt();
-        int day = match.captured(3).toInt();
-        int hour = match.captured(4).toInt();
-        int minute = match.captured(5).toInt();
-        int second = match.captured(6).toInt();
-
-        QDateTime fileTime = QDateTime(QDate(year, month, day), QTime(hour, minute, second));
-
-        if (fileTime.isValid()) {
-            return fileTime < cutoffTime;
-        }
-    }
-
-    // 如果无法从文件名解析时间，使用文件的最后修改时间作为备选方案
-    if (fileInfo.exists()) {
-        return fileInfo.lastModified() < cutoffTime;
-    }
-
-    return false;
-}
-
-void InitWidget::scheduleDailyCleanup()
-{
-    // 计算距离下一次清理的时间（毫秒）
-    QDateTime now = QDateTime::currentDateTime();
-    QDateTime nextCleanup(now.date(), QTime(2, 0, 0));
-    if (nextCleanup <= now) {
-        nextCleanup = nextCleanup.addDays(1);
-    }
-
-    qint64 interval = now.msecsTo(nextCleanup);
-
-    // 设置单次定时器，触发后重新安排
-    m_cleanupTimer->setSingleShot(true);
-    m_cleanupTimer->start(interval);
-
-    qDebug() << "Next image cleanup scheduled at:" << nextCleanup.toString("yyyy-MM-dd hh:mm:ss")
-             << "in" << (interval / 1000 / 3600.0) << "hours";
 }

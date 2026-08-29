@@ -120,18 +120,8 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="label">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 0, 0);</string>
-        </property>
-        <property name="text">
-         <string>只保存7天数据，当插入新数据的时候，会自动清理过期数据</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="Bt_Query">
+       <item row="0" column="3">
+        <widget class="QPushButton" name="Bt_Query">
         <property name="minimumSize">
          <size>
           <width>80</width>

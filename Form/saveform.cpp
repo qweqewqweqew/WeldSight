@@ -6,7 +6,6 @@
 #include <QUrl>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QSpinBox>
 
 #include <Common/SysEnv.h>
 
@@ -33,7 +32,6 @@ SaveForm::SaveForm(QWidget *parent)
 
     initCheckBoxes();
     updateCurrentPathDisplay();
-    updateSaveDaysDisplay();  // 新增：初始化保存天数显示
 
 }
 
@@ -96,33 +94,12 @@ void SaveForm::initCheckBoxes() {
             }
         }
     }
-
-    // 新增：初始化保存天数SpinBox
-    QSpinBox* saveDaysSpinBox = findChild<QSpinBox*>("saveDaysSpinBox");
-    if (saveDaysSpinBox) {
-        int currentDays = SysEnv::instance().getImageSaveDays();
-        saveDaysSpinBox->setValue(currentDays);
-        saveDaysSpinBox->setRange(1, 3650); // 1天到10年
-        saveDaysSpinBox->setSuffix(tr(" 天"));
-        connect(saveDaysSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-                this, &SaveForm::on_saveDaysSpinBox_valueChanged);
-    }
 }
 
 void SaveForm::updateCurrentPathDisplay()
 {
     QString currentPath = SysEnv::instance().getImageSavePath();
     ui->label_currentPath->setText(currentPath);
-}
-
-// 新增：更新保存天数显示
-void SaveForm::updateSaveDaysDisplay()
-{
-    QSpinBox* saveDaysSpinBox = findChild<QSpinBox*>("saveDaysSpinBox");
-    if (saveDaysSpinBox) {
-        int currentDays = SysEnv::instance().getImageSaveDays();
-        saveDaysSpinBox->setValue(currentDays);
-    }
 }
 
 CameraSw SaveForm::getCameraSaveSettings(int cameraIndex) const
@@ -244,16 +221,6 @@ void SaveForm::on_Bt_changePath_clicked()
 
         QMessageBox::information(this, tr("Success"),QString(tr("The save path has been updated to:\n%1")).arg(newPath));
     }
-}
-
-// 新增：保存天数变化槽函数
-void SaveForm::on_saveDaysSpinBox_valueChanged(int days)
-{
-    // 更新系统环境中的保存天数
-    SysEnv::instance().setImageSaveDays(days);
-
-    // 发出信号通知保存天数已更改
-    emit sigSaveDaysChanged(days);
 }
 
 bool SaveForm::isPathWritable(const QString &path)
