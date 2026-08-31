@@ -556,11 +556,6 @@ void processWith640Input(int cameraId,
                 result.hxResult[0].hx_height = measuredHeight;
                 result.hxResult[0].hx_weight = measuredWidth;
             }
-            if (result.HX_Area != 0.0 &&
-                (result.HX_Area < params.min_area ||
-                 result.HX_Area > params.max_area)) {
-                result.HX_NGReult |= kHxAreaError;
-            }
         }
 
         const auto mapPoint = [&](const cv::Point2f& point) {
@@ -739,6 +734,14 @@ void processWith640Input(int cameraId,
             if (measuredSolder.TBtoHX_distance > params.max_TBDis)
                 result.HX_NGReult |= kPinDistanceError;
         }
+    }
+
+    // 无论分割是否成功，都对最终采用的面积做上下限校验：
+    // 分割成功时使用掩膜面积，分割失败时使用检测框宽×高的兜底面积。
+    if (hasSolder && result.HX_Area != 0.0 &&
+        (result.HX_Area < params.min_area ||
+         result.HX_Area > params.max_area)) {
+        result.HX_NGReult |= kHxAreaError;
     }
 
     if (hasSolder) {
