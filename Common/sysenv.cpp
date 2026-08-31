@@ -10,13 +10,18 @@ namespace {
 
 QList<int> parseWeldPointList(const QVariant& value, const QList<int>& fallback)
 {
-    const QString text = value.toString().trimmed();
-    if (text.isEmpty()) {
-        return {};
+    QStringList tokens;
+    if (value.type() == QVariant::StringList) {
+        tokens = value.toStringList();
+    } else {
+        const QString text = value.toString().trimmed();
+        if (text.isEmpty()) {
+            return {};
+        }
+        tokens = text.split(',', Qt::KeepEmptyParts);
     }
 
     QList<int> points;
-    const QStringList tokens = text.split(',', Qt::KeepEmptyParts);
     for (const QString& token : tokens) {
         bool ok = false;
         const int point = token.trimmed().toInt(&ok);
