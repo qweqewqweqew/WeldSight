@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QPushButton>
 #include <opencv2/imgproc.hpp>
 #include <Alg/ImageConvert.h>
@@ -462,20 +463,37 @@ void CapSenseTriForm::onAlgorithmResultReady(const WeldingResult& result)
         QImage archivePix = cvqt::drawImgText(result.dst, lines, scaledStyles,
                                               textOrigin, lineSpacing);
 
-        // 界面显示：保持原始宽高比缩放，避免特殊旋转焊点被交换宽高后拉伸变形。
-        // 特殊横版图使用全局配置的显示比例，普通图仍保持长边 640。
+        // 界面显示：先按统一的 640 长边生成标准图，再将特殊旋转图按配置比例
+        // 居中放入同尺寸黑色画布。显示控件即使自适应铺满画布，图像主体也不会被再次放大。
         cv::Mat displaySrc = result.dst;
-        const bool isRotatedLandscape = displaySrc.cols > displaySrc.rows;
-        const double targetLongSide = isRotatedLandscape
-            ? 640.0 * SysEnv::instance().getRotatedImageScale()
-            : 640.0;
+        const bool isRotatedLandscape =
+            SysEnv::instance().productUsesSpecialRotation()
+            && displaySrc.cols > displaySrc.rows;
         const double displayScale =
-            targetLongSide / (std::max)(displaySrc.cols, displaySrc.rows);
+            640.0 / (std::max)(displaySrc.cols, displaySrc.rows);
         cv::Mat displayMat;
         cv::resize(displaySrc, displayMat, cv::Size(),
                    displayScale, displayScale, cv::INTER_AREA);
         QImage pix = cvqt::drawImgText(displayMat, lines, styles,
                                        cv::Point(30, 100), 10);
+        if (isRotatedLandscape) {
+            const double rotatedScale = SysEnv::instance().getRotatedImageScale();
+            const QSize scaledSize(
+                (std::max)(1, qRound(pix.width() * rotatedScale)),
+                (std::max)(1, qRound(pix.height() * rotatedScale)));
+            const QImage scaledPix = pix.scaled(
+                scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+            QImage canvas(pix.size(), pix.format());
+            canvas.fill(Qt::black);
+            {
+                QPainter painter(&canvas);
+                painter.drawImage((canvas.width() - scaledPix.width()) / 2,
+                                  (canvas.height() - scaledPix.height()) / 2,
+                                  scaledPix);
+            }
+            pix = canvas;
+        }
         face.setDisplayImage(result.id, 1, pix);
 
         QStringList headers = {};
