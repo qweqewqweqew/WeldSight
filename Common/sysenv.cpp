@@ -6,6 +6,41 @@
 #include <QHostAddress>
 #include <QCoreApplication>
 
+namespace {
+
+QList<int> parseWeldPointList(const QVariant& value, const QList<int>& fallback)
+{
+    const QString text = value.toString().trimmed();
+    if (text.isEmpty()) {
+        return {};
+    }
+
+    QList<int> points;
+    const QStringList tokens = text.split(',', Qt::KeepEmptyParts);
+    for (const QString& token : tokens) {
+        bool ok = false;
+        const int point = token.trimmed().toInt(&ok);
+        if (!ok || point < 1 || point > 20) {
+            return fallback;
+        }
+        if (!points.contains(point)) {
+            points.append(point);
+        }
+    }
+    return points;
+}
+
+QString weldPointListToString(const QList<int>& points)
+{
+    QStringList values;
+    for (int point : points) {
+        values.append(QString::number(point));
+    }
+    return values.join(',');
+}
+
+}
+
 SysEnv& SysEnv::instance()
 {
     static SysEnv env;
@@ -78,6 +113,14 @@ void SysEnv::load()
     if (m_cfg.rotatedImageScale < 0.1 || m_cfg.rotatedImageScale > 1.0) {
         m_cfg.rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
     }
+    m_cfg.rotatedWeldPointsCCW = parseWeldPointList(
+        m_ini->value("Rotation/CounterClockwiseWeldPoints",
+                     weldPointListToString(DEFAULT_ROTATED_WELD_POINTS_CCW)),
+        DEFAULT_ROTATED_WELD_POINTS_CCW);
+    m_cfg.rotatedWeldPointsCW = parseWeldPointList(
+        m_ini->value("Rotation/ClockwiseWeldPoints",
+                     weldPointListToString(DEFAULT_ROTATED_WELD_POINTS_CW)),
+        DEFAULT_ROTATED_WELD_POINTS_CW);
     m_cfg.productMode = normalizeProductMode(
         m_ini->value("Product/Mode", DEFAULT_PRODUCT_MODE).toString());
     m_cfg.imageSavePath = m_ini->value("Save/ImagePath", DEFAULT_IMAGE_SAVE_PATH).toString();
@@ -103,6 +146,8 @@ void SysEnv::load()
         m_cfg.serverPort = DEFAULT_SERVER_PORT;
         m_cfg.theme = DEFAULT_THEME;
         m_cfg.rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
+        m_cfg.rotatedWeldPointsCCW = DEFAULT_ROTATED_WELD_POINTS_CCW;
+        m_cfg.rotatedWeldPointsCW = DEFAULT_ROTATED_WELD_POINTS_CW;
         m_cfg.productMode = DEFAULT_PRODUCT_MODE;
         m_cfg.imageSavePath = DEFAULT_IMAGE_SAVE_PATH;
         m_cfg.autoStart = DEFAULT_AUTO_START;
@@ -131,6 +176,10 @@ void SysEnv::save()
     m_ini->setValue("Net/ServerPort", m_cfg.serverPort);
     m_ini->setValue("UI/Theme", m_cfg.theme);
     m_ini->setValue("UI/RotatedImageScale", m_cfg.rotatedImageScale);
+    m_ini->setValue("Rotation/CounterClockwiseWeldPoints",
+                    weldPointListToString(m_cfg.rotatedWeldPointsCCW));
+    m_ini->setValue("Rotation/ClockwiseWeldPoints",
+                    weldPointListToString(m_cfg.rotatedWeldPointsCW));
     m_ini->setValue("Product/Mode", m_cfg.productMode);
     m_ini->setValue("Save/ImagePath", m_cfg.imageSavePath);
     m_ini->remove("Save/ImageSaveDays");
@@ -323,6 +372,16 @@ bool SysEnv::productCameraIsNEnd(int cameraId) const
 bool SysEnv::productUsesSpecialRotation() const
 {
     return m_cfg.productMode == QStringLiteral("E16");
+}
+
+bool SysEnv::weldPointRotatesCounterClockwise(int weldPoint) const
+{
+    return m_cfg.rotatedWeldPointsCCW.contains(weldPoint);
+}
+
+bool SysEnv::weldPointRotatesClockwise(int weldPoint) const
+{
+    return m_cfg.rotatedWeldPointsCW.contains(weldPoint);
 }
 
 double SysEnv::getRotatedImageScale() const

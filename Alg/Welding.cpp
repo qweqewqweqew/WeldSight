@@ -156,10 +156,11 @@ void rotateByExplicitWeldPoint(cv::Mat& image, int weldPoint)
     if (image.empty() || weldPoint <= 0) return;
     if (!SysEnv::instance().productUsesSpecialRotation()) return;
 
-    // 旋转跟随焊点序号，不跟随该序号当前所在的相机。
-    if (weldPoint == 1 || weldPoint == 19) {
+    // 旋转跟随配置的焊点序号，不跟随该序号当前所在的相机。
+    const SysEnv& env = SysEnv::instance();
+    if (env.weldPointRotatesCounterClockwise(weldPoint)) {
         cv::rotate(image, image, cv::ROTATE_90_COUNTERCLOCKWISE);
-    } else if (weldPoint == 18) {
+    } else if (env.weldPointRotatesClockwise(weldPoint)) {
         cv::rotate(image, image, cv::ROTATE_90_CLOCKWISE);
     }
 }

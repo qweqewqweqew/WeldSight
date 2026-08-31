@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QList>
 #include <QMutex>
 
 // 默认配置值
@@ -15,6 +16,8 @@ const QString DEFAULT_SERVER_IP = "127.0.0.1";
 const int DEFAULT_SERVER_PORT = 502;
 const QString DEFAULT_THEME = "Light";
 const double DEFAULT_ROTATED_IMAGE_SCALE = 0.8;
+const QList<int> DEFAULT_ROTATED_WELD_POINTS_CCW = {2, 20};
+const QList<int> DEFAULT_ROTATED_WELD_POINTS_CW = {3};
 const QString DEFAULT_PRODUCT_MODE = "U07";
 const QString DEFAULT_IMAGE_SAVE_PATH = ""; // 空字符串表示使用默认路径
 const bool DEFAULT_AUTO_START = false;  // 新增：默认不自启动
@@ -31,6 +34,8 @@ struct Persistent {
     int     serverPort = DEFAULT_SERVER_PORT;
     QString theme      = DEFAULT_THEME;
     double  rotatedImageScale = DEFAULT_ROTATED_IMAGE_SCALE;
+    QList<int> rotatedWeldPointsCCW = DEFAULT_ROTATED_WELD_POINTS_CCW;
+    QList<int> rotatedWeldPointsCW = DEFAULT_ROTATED_WELD_POINTS_CW;
     QString productMode   = DEFAULT_PRODUCT_MODE;
     QString imageSavePath = DEFAULT_IMAGE_SAVE_PATH; // 新增：图像保存路径
     bool    autoStart     = DEFAULT_AUTO_START;  // 新增：自启动开关
@@ -105,6 +110,8 @@ public:
     int productTotalPoints() const;
     bool productCameraIsNEnd(int cameraId) const;
     bool productUsesSpecialRotation() const;
+    bool weldPointRotatesCounterClockwise(int weldPoint) const;
+    bool weldPointRotatesClockwise(int weldPoint) const;
     double getRotatedImageScale() const;
     static QString normalizeProductMode(const QString& mode);
     static QStringList productModes();
